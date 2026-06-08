@@ -1,0 +1,6 @@
+{
+  "name": "Finanças Pessoais",
+  "description": "Análise de dados de faturas do Nubank, Inter e Neon com categorização inteligente e assistente IA integrado para responder dúvidas sobre o orçamento.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
