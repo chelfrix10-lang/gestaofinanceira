@@ -176,20 +176,31 @@ export default function GithubSync({ financialData, onRestoreData }: GithubSyncP
         localStorage.setItem('fp_github_gist_id', gistId.trim());
       }
 
-      // Sync backend state
-      const backendResponse = await fetch('/api/sync/restore', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ data: parsedBackup })
-      });
+      // Always save to client-side localStorage as source of truth
+      localStorage.setItem('user_financial_data', JSON.stringify(parsedBackup));
 
-      const backendJson = await backendResponse.json();
-      if (backendJson.success) {
-        onRestoreData(backendJson.data);
-        setSuccessMsg('O banco de dados foi restaurado com sucesso do seu backup sincronizado no GitHub!');
-      } else {
-        throw new Error(backendJson.error || 'Erro na gravação remota do servidor.');
+      // Try background syncing the backend server cache
+      let syncData = parsedBackup;
+      try {
+        const backendResponse = await fetch('/api/sync/restore', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ data: parsedBackup })
+        });
+        const contentType = backendResponse.headers.get('content-type') || '';
+        if (contentType.includes('application/json')) {
+          const backendJson = await backendResponse.json();
+          if (backendJson.success) {
+            syncData = backendJson.data;
+            localStorage.setItem('user_financial_data', JSON.stringify(syncData));
+          }
+        }
+      } catch (err) {
+        console.warn("Backend state sync bypassed during static host restore execution:", err);
       }
+
+      onRestoreData(syncData);
+      setSuccessMsg('O banco de dados foi restaurado com sucesso do seu backup sincronizado no GitHub!');
 
     } catch (err: any) {
       console.error(err);
