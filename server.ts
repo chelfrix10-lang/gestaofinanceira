@@ -21,8 +21,12 @@ try {
   if (fs.existsSync(DB_FILE_PATH)) {
     const rawContent = fs.readFileSync(DB_FILE_PATH, 'utf-8');
     parsedData = JSON.parse(rawContent);
+    if (!parsedData.updatedAt) {
+      parsedData.updatedAt = Date.now();
+    }
   } else {
     parsedData = parseFinancialData(RAW_CSV_DATA);
+    parsedData.updatedAt = Date.now();
     const dir = path.dirname(DB_FILE_PATH);
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true });
@@ -32,6 +36,7 @@ try {
 } catch (error) {
   console.error("Erro ao carregar o banco de dados JSON, usando os dados padrão:", error);
   parsedData = parseFinancialData(RAW_CSV_DATA);
+  parsedData.updatedAt = Date.now();
 }
 
 // Helper to save server-side JSON database state to disk
@@ -102,6 +107,7 @@ async function startServer() {
   app.post('/api/reset', (req, res) => {
     try {
       parsedData = parseFinancialData(RAW_CSV_DATA);
+      parsedData.updatedAt = Date.now();
       saveDatabase();
       res.json({ success: true, data: parsedData });
     } catch (err: any) {
@@ -112,12 +118,28 @@ async function startServer() {
   // API Route: Sync and restore entire database from backup
   app.post('/api/sync/restore', (req, res) => {
     try {
-      const { data } = req.body;
+      const { data, force } = req.body;
       if (!data || typeof data !== 'object' || !data.transactions || !data.bankAccounts) {
         return res.status(400).json({ success: false, error: 'Dados de backup inválidos ou mal estruturados.' });
       }
       
+      const serverTime = parsedData.updatedAt || 0;
+      const clientTime = data.updatedAt || 0;
+      
+      // If the client's backup payload is older than the server's current state, do not overwrite it!
+      if (!force && clientTime < serverTime) {
+        return res.json({
+          success: false,
+          conflict: true,
+          serverData: parsedData,
+          message: 'O servidor possui dados mais recentes.'
+        });
+      }
+      
       parsedData = data;
+      if (!parsedData.updatedAt) {
+        parsedData.updatedAt = Date.now();
+      }
       recalculateSummary(parsedData);
       saveDatabase();
       res.json({ success: true, data: parsedData });
@@ -153,6 +175,7 @@ async function startServer() {
       };
 
       parsedData.transactions.unshift(newTx);
+      parsedData.updatedAt = Date.now();
       
       // Recalculate summary dynamically
       recalculateSummary(parsedData);
@@ -176,6 +199,7 @@ async function startServer() {
       }
 
       tx.category = category;
+      parsedData.updatedAt = Date.now();
       saveDatabase();
       res.json({ success: true, data: parsedData });
     } catch (err: any) {
@@ -195,6 +219,8 @@ async function startServer() {
       }
 
       tx.debited = debited === true || debited === 'true';
+
+      parsedData.updatedAt = Date.now();
 
       // Recalculate summary dynamically
       recalculateSummary(parsedData);

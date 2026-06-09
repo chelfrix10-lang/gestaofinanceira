@@ -23,7 +23,7 @@ import {
   Server
 } from 'lucide-react';
 import { FinancialData } from '../types';
-import { isFirebaseConfigured, firebaseConfig } from '../firebase';
+import { isSupabaseConfigured, supabaseConfig, supabaseDiagnostics } from '../supabase';
 
 interface GithubSyncProps {
   financialData: FinancialData;
@@ -283,59 +283,83 @@ export default function GithubSync({ financialData, onRestoreData }: GithubSyncP
             </div>
           </div>
 
-          {/* Firebase Connection Card */}
+          {/* Supabase Connection Card */}
           <div className="bg-white border border-zinc-150 p-6 rounded-2xl shadow-sm space-y-5">
             <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
               <div className="flex items-center gap-2">
-                <Database size={16} className={isFirebaseConfigured ? "text-emerald-500" : "text-zinc-400"} />
-                <h3 className="text-sm font-bold text-zinc-800 uppercase tracking-wide">Banco de Dados Cloud</h3>
+                <Database size={16} className={isSupabaseConfigured ? "text-emerald-500" : "text-zinc-400"} />
+                <h3 className="text-sm font-bold text-zinc-800 uppercase tracking-wide font-sans">Banco de Dados Supabase</h3>
               </div>
               
               <div className="flex items-center gap-1.5">
-                <span className={`w-2 h-2 rounded-full ${isFirebaseConfigured ? "bg-emerald-500 animate-pulse" : "bg-amber-400"}`}></span>
+                <span className={`w-2 h-2 rounded-full ${isSupabaseConfigured ? "bg-emerald-500 animate-pulse" : "bg-amber-400"}`}></span>
                 <span className="text-[10px] font-bold text-zinc-500 uppercase">
-                  {isFirebaseConfigured ? "Firebase Ativo" : "Armazenamento Local"}
+                  {isSupabaseConfigured ? "Supabase Ativo" : "Armazenamento Local"}
                 </span>
               </div>
             </div>
 
             <div className="space-y-4 text-xs text-zinc-650 leading-relaxed">
-              {isFirebaseConfigured ? (
+              {/* Variable Diagnostics Table */}
+              <div className="bg-zinc-50 border border-zinc-150 rounded-xl p-3.5 space-y-2">
+                <p className="font-bold text-[11px] text-zinc-800">Status das Variáveis no Navegador:</p>
+                <div className="space-y-1.5 text-[10px] font-mono">
+                  <div className="flex items-center justify-between border-b border-zinc-100 pb-1">
+                    <span className="text-zinc-500">VITE_SUPABASE_URL</span>
+                    <span className={supabaseDiagnostics.hasUrl ? "text-emerald-600 font-bold" : "text-rose-500 font-bold"}>
+                      {supabaseDiagnostics.hasUrl ? "Detectada ✓" : "Não encontrada ✗"}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-zinc-500">VITE_SUPABASE_ANON_KEY</span>
+                    <span className={supabaseDiagnostics.hasAnonKey ? "text-emerald-600 font-bold" : "text-rose-500 font-bold"}>
+                      {supabaseDiagnostics.hasAnonKey ? "Detectada ✓" : "Não encontrada ✗"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {isSupabaseConfigured ? (
                 <div className="space-y-3">
                   <div className="bg-emerald-50/50 border border-emerald-100 p-3.5 rounded-xl text-emerald-800 space-y-1">
-                    <p className="font-bold">Totalmente Sincronizado!</p>
+                    <p className="font-bold">Totalmente Sincronizado com Supabase!</p>
                     <p className="text-[11px] leading-relaxed">
-                      Seus dados de transações e faturas estão sendo persistidos de forma segura no Firestore Database.
+                      Seus dados de transações e faturas estão sendo persistidos de forma segura e síncrona em tempo real na tabela <code>financial_data</code> do seu banco Postgres no Supabase.
                     </p>
                   </div>
                   <div className="p-1 space-y-1 text-zinc-500">
-                    <p><strong>Projeto Conectado:</strong></p>
+                    <p><strong>URL do Supabase Conectada:</strong></p>
                     <code className="block bg-zinc-50 border border-zinc-150 p-2 rounded-lg font-mono text-[10px] text-zinc-700 break-all select-all">
-                      {firebaseConfig.projectId}
+                      {supabaseConfig.url}
                     </code>
                   </div>
                 </div>
               ) : (
                 <div className="space-y-4">
-                  <p>
-                    Por padrão, os dados estão salvos de forma resiliente e temporária em arquivo JSON no container local. Para ter um banco de dados persistente robusto, conecte o seu próprio Firebase.
+                  <p className="text-[11px] text-amber-750 bg-amber-50/40 border border-amber-100 p-3 rounded-xl leading-relaxed">
+                    <strong>Atenção:</strong> O Supabase está **Inativo** temporariamente porque suas chaves de ambiente não foram mapeadas na hospedagem (Netlify, Vercel, etc.) ou no AI Studio Build. Para disponibilizar as variáveis na build estática do React/Vite, elas PRECISAM obrigatoriamente começar com <strong>VITE_</strong>.
                   </p>
                   
                   <div className="bg-zinc-50 border border-zinc-150 p-4 rounded-xl space-y-3">
                     <h4 className="font-bold text-zinc-800 flex items-center gap-1.5 font-sans">
                       <Server size={14} className="text-zinc-500" />
-                      Como conectar seu Firebase?
+                      Como mapear no Netlify / Hospedagem:
                     </h4>
                     <ol className="list-decimal list-inside space-y-2 text-zinc-600 text-[11px]">
-                      <li>Crie um projeto web em seu <a href="https://console.firebase.google.com" target="_blank" rel="noopener noreferrer" className="text-zinc-900 border-b border-zinc-900 font-semibold inline-flex items-center gap-0.5">Firebase Console <ExternalLink size={10} /></a>.</li>
-                      <li>Habilite o **Firestore Database** em modo de produção ou teste.</li>
-                      <li>Acesse a engrenagem de **Configurações de Projeto** e copie as credenciais do aplicativo web.</li>
-                      <li>Clique em **Settings** na barra lateral do AI Studio, adicione as variáveis correspondentes no painel de segredos de ambiente:
-                        <div className="mt-1.5 grid grid-cols-1 gap-1 text-[10px] font-mono text-zinc-500 pl-4">
-                          <div>• VITE_FIREBASE_API_KEY</div>
-                          <div>• VITE_FIREBASE_PROJECT_ID</div>
-                          <div>• VITE_FIREBASE_AUTH_DOMAIN</div>
-                          <div>• VITE_FIREBASE_APP_ID</div>
+                      <li>Crie um projeto gratuito em <a href="https://supabase.com" target="_blank" rel="noopener noreferrer" className="text-zinc-900 border-b border-zinc-900 font-semibold inline-flex items-center gap-0.5">Supabase <ExternalLink size={10} /></a>.</li>
+                      <li>Vá no **SQL Editor** do Supabase e execute este comando SQL para criar a tabela necessária:
+                        <pre className="mt-1.5 bg-zinc-900 text-zinc-100 p-2 rounded-lg text-[9px] font-mono whitespace-pre overflow-x-auto select-all">
+{`create table financial_data (
+  id text primary key,
+  data jsonb not null
+);`}
+                        </pre>
+                      </li>
+                      <li>Acesse **Project Settings** &gt; **API** no console do Supabase e obtenha a URL e a Anon Key.</li>
+                      <li>Adicione as variáveis correspondentes no painel de segredos da sua plataforma (ex: Netlify):
+                        <div className="mt-1.5 bg-white/70 border border-zinc-100 p-2 rounded-lg text-[10px] font-mono text-zinc-500 space-y-1 pl-3">
+                          <div>• <span className="font-semibold text-zinc-800">VITE_SUPABASE_URL</span></div>
+                          <div>• <span className="font-semibold text-zinc-800">VITE_SUPABASE_ANON_KEY</span></div>
                         </div>
                       </li>
                     </ol>

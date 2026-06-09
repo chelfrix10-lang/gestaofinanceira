@@ -14,7 +14,7 @@ import { FinancialData, ChatMessage, BankAccount } from './types';
 import { Loader2, Bot, AlertTriangle } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { RAW_CSV_DATA } from './data/raw_data';
-import { isFirebaseConfigured, loadFromFirebase, saveToFirebase } from './firebase';
+import { isSupabaseConfigured, loadFromSupabase, saveToSupabase } from './supabase';
 
 export default function App() {
   const [currentTab, setCurrentTab] = useState<string>('overview');
@@ -85,7 +85,7 @@ Seu acumulado atual é de **${despesas}** distribuído em **${count}** transaç�
       };
     }
 
-    if (query.includes('hosped') || query.includes('hospedar') || query.includes('netlify') || query.includes('firebase') || query.includes('vercel') || query.includes('erro') || query.includes('servidor') || query.includes('conex')) {
+    if (query.includes('hosped') || query.includes('hospedar') || query.includes('netlify') || query.includes('supabase') || query.includes('firebase') || query.includes('vercel') || query.includes('erro') || query.includes('servidor') || query.includes('conex')) {
       return {
         reply: `### 🌐 Notas sobre Hospedagem e Cloud do Sistema
         
@@ -94,7 +94,7 @@ O sistema de Finanças Pessoais se adapta dinamicamente à sua infraestrutura:
 1. **Atualmente em Netlify/Static Hosting:** O Netlify serve apenas os arquivos estáticos compilados do react. Graças ao nosso recurso de **resiliência local**, seu orçamento funciona 100% de forma offline pelo **localStorage**.
 2. **Sincronização em Nuvem (Multi-dispositivos):**
    - **GitHub Backup:** Vá na aba **Sincronização no GitHub** onde você pode exportar e puxar backups de Gists Privados 100% gratuitamente.
-   - **Firebase Integration:** Se desejar uma persistência autêntica e em nuvem automática, basta criar um projeto grátis no Firebase Console e salvar as chaves de API nos segredos (**Secrets**) da sua plataforma de desenvolvimento!`
+   - **Supabase Integration:** Se desejar uma persistência autêntica e em nuvem automática, basta criar um projeto grátis no Supabase e salvar as chaves de API nos segredos (**Secrets**) da sua plataforma de desenvolvimento!`
       };
     }
 
@@ -106,25 +106,25 @@ Como estou rodando em **modo offline resiliente** para garantir que você não p
 **Você pode me perguntar sobre:**
 - **"Qual o meu saldo?"** para detalhes das contas bancárias.
 - **"Quais são meus gastos?"** para auditar despesas.
-- **"Como posso salvar em nuvem?"** para ver instruções do GitHub/Firebase.`
+- **"Como posso salvar em nuvem?"** para ver instruções do GitHub/Supabase.`
     };
   };
 
-  // Fetch all initial parsed financial statements on app mount
+  // Fetch all initial parsed financial statements on app mount with last-write-wins replication
   const fetchFinancialData = async () => {
     try {
-      // 1. Try loading from Firestore first if configured
-      if (isFirebaseConfigured) {
-        const firebaseData = await loadFromFirebase();
-        if (firebaseData) {
-          setFinancialData(firebaseData);
-          localStorage.setItem('user_financial_data', JSON.stringify(firebaseData));
+      // 1. Try loading from Supabase first if configured
+      if (isSupabaseConfigured) {
+        const supabaseData = await loadFromSupabase();
+        if (supabaseData) {
+          setFinancialData(supabaseData);
+          localStorage.setItem('user_financial_data', JSON.stringify(supabaseData));
           
           try {
             await fetch('/api/sync/restore', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ data: firebaseData }),
+              body: JSON.stringify({ data: supabaseData, force: true }),
             });
           } catch (e) {
             console.warn("Backend rest sync skipped: running in serverless environment.");
@@ -136,68 +136,94 @@ Como estou rodando em **modo offline resiliente** para garantir que você não p
 
       // Check for localStorage cached data
       const localDataStr = localStorage.getItem('user_financial_data');
+      let localData: any = null;
       if (localDataStr) {
         try {
-          const localData = JSON.parse(localDataStr);
-          if (localData && localData.transactions && localData.bankAccounts) {
-            setFinancialData(localData);
-            setLoading(false);
-            
-            // Background try to sync backend if active
-            fetch('/api/sync/restore', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ data: localData }),
-            }).catch(() => {});
-            return;
-          }
+          localData = JSON.parse(localDataStr);
         } catch (e) {
           console.error("Local storage sync error:", e);
         }
       }
 
-      // 2. Default fallback to server JSON disk database
-      const response = await fetch('/api/data');
-      const contentType = response.headers.get('content-type') || '';
-      if (!contentType.includes('application/json')) {
-        throw new Error('Retorno não-JSON de API.');
-      }
-      
-      const json = await response.json();
-      if (json.success) {
-        setFinancialData(json.data);
-        localStorage.setItem('user_financial_data', JSON.stringify(json.data));
-        if (isFirebaseConfigured) {
-          await saveToFirebase(json.data);
-        }
-      } else {
-        throw new Error('Erro ao ler a base de dados do provedor.');
-      }
-    } catch (err: any) {
-      console.warn("Conexão direta com servidor indisponível. Carregando parseador local CSV:", err.message);
-      
+      // 2. Fetch from server JSON disk database
+      let serverData: any = null;
       try {
-        const localDataStr = localStorage.getItem('user_financial_data');
-        let localData;
-        if (localDataStr) {
-          localData = JSON.parse(localDataStr);
-        } else {
-          const { parseFinancialData } = await import('./utils/parser');
-          localData = parseFinancialData(RAW_CSV_DATA);
-          localStorage.setItem('user_financial_data', JSON.stringify(localData));
+        const response = await fetch('/api/data');
+        const contentType = response.headers.get('content-type') || '';
+        if (contentType.includes('application/json')) {
+          const json = await response.json();
+          if (json.success) {
+            serverData = json.data;
+          }
         }
+      } catch (err: any) {
+        console.warn("Conexão direta com servidor indisponível:", err.message);
+      }
 
-        if (localData) {
+      // 3. Resolve conflicts gracefully using modification timestamps (last-write-wins)
+      if (serverData && localData) {
+        const serverTime = serverData.updatedAt || 0;
+        const clientTime = localData.updatedAt || 0;
+
+        if (clientTime > serverTime) {
+          // Client has direct newer modifications, restore on server!
+          console.log("Client local storage has newer modifications. Synchronizing changes to Server...");
           setFinancialData(localData);
-          if (isFirebaseConfigured) {
-            await saveToFirebase(localData);
+          
+          try {
+            const syncRes = await fetch('/api/sync/restore', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ data: localData }),
+            });
+            const syncJson = await syncRes.json();
+            if (syncJson.success === false && syncJson.conflict && syncJson.serverData) {
+              // Server actually had newer data written concurrently
+              console.log("Concurrent conflict! Server was fresher. Aligning local cache.");
+              setFinancialData(syncJson.serverData);
+              localStorage.setItem('user_financial_data', JSON.stringify(syncJson.serverData));
+            }
+          } catch (e) {
+            console.warn("Sync backoff failed:", e);
           }
         } else {
-          setErrorMsg('Erro crítico ao instanciar os dados offline do sistema.');
+          // Server data is newer/fresher (e.g. edited on another device, or new device)
+          console.log("Server data is up to date. Updating client storage...");
+          setFinancialData(serverData);
+          localStorage.setItem('user_financial_data', JSON.stringify(serverData));
         }
-      } catch (nestedErr: any) {
-        setErrorMsg(`Falha de recuperação local offline: ${nestedErr.message}`);
+      } else if (serverData) {
+        // No client data existed (e.g. new device), pull from server
+        console.log("Loading cloud-backed state for new device...");
+        setFinancialData(serverData);
+        localStorage.setItem('user_financial_data', JSON.stringify(serverData));
+      } else if (localData) {
+        // No server connection or data, fallback to client
+        console.log("Loading offline container storage...");
+        setFinancialData(localData);
+        fetch('/api/sync/restore', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ data: localData }),
+        }).catch(() => {});
+      } else {
+        // Fallback: Parse default CSV
+        console.log("Initializing base financial statement schema...");
+        const { parseFinancialData } = await import('./utils/parser');
+        const freshData = parseFinancialData(RAW_CSV_DATA);
+        freshData.updatedAt = Date.now();
+        setFinancialData(freshData);
+        localStorage.setItem('user_financial_data', JSON.stringify(freshData));
+        
+        fetch('/api/sync/restore', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ data: freshData }),
+        }).catch(() => {});
       }
+    } catch (err: any) {
+      console.error("General loading error:", err);
+      setErrorMsg(`Erro de carregamento: ${err.message}`);
     } finally {
       setLoading(false);
     }
@@ -238,12 +264,13 @@ Como estou rodando em **modo offline resiliente** para garantir que você não p
     if (financialData) {
       const copy = JSON.parse(JSON.stringify(financialData));
       copy.transactions.unshift(newTx);
+      copy.updatedAt = Date.now();
       recalculateLocalSummary(copy);
       localUpdatedData = copy;
       setFinancialData(localUpdatedData);
       localStorage.setItem('user_financial_data', JSON.stringify(localUpdatedData));
-      if (isFirebaseConfigured) {
-        saveToFirebase(localUpdatedData).catch(() => {});
+      if (isSupabaseConfigured) {
+        saveToSupabase(localUpdatedData).catch(() => {});
       }
     }
 
@@ -259,8 +286,8 @@ Como estou rodando em **modo offline resiliente** para garantir que você não p
         if (json.success) {
           setFinancialData(json.data);
           localStorage.setItem('user_financial_data', JSON.stringify(json.data));
-          if (isFirebaseConfigured) {
-            await saveToFirebase(json.data);
+          if (isSupabaseConfigured) {
+            await saveToSupabase(json.data);
           }
         }
       }
@@ -278,11 +305,12 @@ Como estou rodando em **modo offline resiliente** para garantir que você não p
       const tx = copy.transactions.find((t: any) => t.id === id);
       if (tx) {
         tx.category = newCategory;
+        copy.updatedAt = Date.now();
         localUpdatedData = copy;
         setFinancialData(localUpdatedData);
         localStorage.setItem('user_financial_data', JSON.stringify(localUpdatedData));
-        if (isFirebaseConfigured) {
-          saveToFirebase(localUpdatedData).catch(() => {});
+        if (isSupabaseConfigured) {
+          saveToSupabase(localUpdatedData).catch(() => {});
         }
       }
     }
@@ -299,8 +327,8 @@ Como estou rodando em **modo offline resiliente** para garantir que você não p
         if (json.success) {
           setFinancialData(json.data);
           localStorage.setItem('user_financial_data', JSON.stringify(json.data));
-          if (isFirebaseConfigured) {
-            await saveToFirebase(json.data);
+          if (isSupabaseConfigured) {
+            await saveToSupabase(json.data);
           }
         }
       }
@@ -317,12 +345,13 @@ Como estou rodando em **modo offline resiliente** para garantir que você não p
       const tx = copy.transactions.find((t: any) => t.id === id);
       if (tx) {
         tx.debited = debited;
+        copy.updatedAt = Date.now();
         recalculateLocalSummary(copy);
         localUpdatedData = copy;
         setFinancialData(localUpdatedData);
         localStorage.setItem('user_financial_data', JSON.stringify(localUpdatedData));
-        if (isFirebaseConfigured) {
-          saveToFirebase(localUpdatedData).catch(() => {});
+        if (isSupabaseConfigured) {
+          saveToSupabase(localUpdatedData).catch(() => {});
         }
       }
     }
@@ -339,8 +368,8 @@ Como estou rodando em **modo offline resiliente** para garantir que você não p
         if (json.success) {
           setFinancialData(json.data);
           localStorage.setItem('user_financial_data', JSON.stringify(json.data));
-          if (isFirebaseConfigured) {
-            await saveToFirebase(json.data);
+          if (isSupabaseConfigured) {
+            await saveToSupabase(json.data);
           }
         }
       }
@@ -355,12 +384,13 @@ Como estou rodando em **modo offline resiliente** para garantir que você não p
     if (financialData) {
       const copy = JSON.parse(JSON.stringify(financialData));
       copy.bankAccounts = updatedAccounts;
+      copy.updatedAt = Date.now();
       recalculateLocalSummary(copy);
       localUpdatedData = copy;
       setFinancialData(localUpdatedData);
       localStorage.setItem('user_financial_data', JSON.stringify(localUpdatedData));
-      if (isFirebaseConfigured) {
-        saveToFirebase(localUpdatedData).catch(() => {});
+      if (isSupabaseConfigured) {
+        saveToSupabase(localUpdatedData).catch(() => {});
       }
     }
 
@@ -377,8 +407,8 @@ Como estou rodando em **modo offline resiliente** para garantir que você não p
           if (json.success) {
             setFinancialData(json.data);
             localStorage.setItem('user_financial_data', JSON.stringify(json.data));
-            if (isFirebaseConfigured) {
-              await saveToFirebase(json.data);
+            if (isSupabaseConfigured) {
+              await saveToSupabase(json.data);
             }
           }
         }
@@ -398,8 +428,8 @@ Como estou rodando em **modo offline resiliente** para garantir que você não p
       const freshData = parseFinancialData(RAW_CSV_DATA);
       setFinancialData(freshData);
       localStorage.setItem('user_financial_data', JSON.stringify(freshData));
-      if (isFirebaseConfigured) {
-        await saveToFirebase(freshData);
+      if (isSupabaseConfigured) {
+        await saveToSupabase(freshData);
       }
     } catch (e) {
       console.error("Local reset failed:", e);
@@ -413,8 +443,8 @@ Como estou rodando em **modo offline resiliente** para garantir que você não p
         if (json.success) {
           setFinancialData(json.data);
           localStorage.setItem('user_financial_data', JSON.stringify(json.data));
-          if (isFirebaseConfigured) {
-            await saveToFirebase(json.data);
+          if (isSupabaseConfigured) {
+            await saveToSupabase(json.data);
           }
         }
       }

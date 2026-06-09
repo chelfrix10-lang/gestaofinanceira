@@ -43,6 +43,7 @@ export interface FinancialData {
   categories: string[];
   bankAccounts: BankAccount[];
   summary: BudgetSummary;
+  updatedAt?: number;
 }
 
 export interface ChatMessage {
