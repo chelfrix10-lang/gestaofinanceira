@@ -23,7 +23,15 @@ import {
   Server
 } from 'lucide-react';
 import { FinancialData } from '../types';
-import { isSupabaseConfigured, supabaseConfig, supabaseDiagnostics } from '../supabase';
+import { 
+  isSupabaseConfigured, 
+  supabaseConfig, 
+  supabaseDiagnostics, 
+  initSupabaseClient, 
+  saveToSupabase, 
+  loadFromSupabase, 
+  getSupabaseCredentials 
+} from '../supabase';
 
 interface GithubSyncProps {
   financialData: FinancialData;
@@ -31,6 +39,11 @@ interface GithubSyncProps {
 }
 
 export default function GithubSync({ financialData, onRestoreData }: GithubSyncProps) {
+  // Supabase Custom State
+  const [customSupabaseUrl, setCustomSupabaseUrl] = useState<string>(() => localStorage.getItem('fp_custom_supabase_url') || '');
+  const [customSupabaseKey, setCustomSupabaseKey] = useState<string>(() => localStorage.getItem('fp_custom_supabase_key') || '');
+  const [isCurrentlyConfigured, setIsCurrentlyConfigured] = useState<boolean>(isSupabaseConfigured);
+
   // Sync state
   const [githubToken, setGithubToken] = useState<string>(() => localStorage.getItem('fp_github_token') || '');
   const [gistId, setGistId] = useState<string>(() => localStorage.getItem('fp_github_gist_id') || '');
@@ -41,6 +54,76 @@ export default function GithubSync({ financialData, onRestoreData }: GithubSyncP
   const [successMsg, setSuccessMsg] = useState<string>('');
   const [errorMsg, setErrorMsg] = useState<string>('');
   const [copiedGistId, setCopiedGistId] = useState<boolean>(false);
+
+  // Handle saving Supabase custom connection locally
+  const handleSaveSupabase = () => {
+    try {
+      const cleanedUrl = customSupabaseUrl.trim();
+      const cleanedKey = customSupabaseKey.trim();
+
+      if (cleanedUrl) {
+        localStorage.setItem('fp_custom_supabase_url', cleanedUrl);
+      } else {
+        localStorage.removeItem('fp_custom_supabase_url');
+      }
+      
+      if (cleanedKey) {
+        localStorage.setItem('fp_custom_supabase_key', cleanedKey);
+      } else {
+        localStorage.removeItem('fp_custom_supabase_key');
+      }
+      
+      // Re-initialize Supabase client
+      initSupabaseClient();
+      setIsCurrentlyConfigured(isSupabaseConfigured);
+      
+      if (isSupabaseConfigured) {
+        setSuccessMsg('Supabase conectado com sucesso! Seus dados de dispositivo agora estão sincronizados.');
+      } else {
+        setErrorMsg('Erro na inicialização. Verifique se a URL e a Anon Key informadas estão corretas.');
+      }
+    } catch (e: any) {
+      setErrorMsg('Erro de conexão: ' + e.message);
+    }
+  };
+
+  // Synchronize data immediately
+  const handleSyncSupabaseNow = async () => {
+    setLoading(true);
+    setErrorMsg('');
+    setSuccessMsg('');
+    try {
+      // 1. Try to load database data
+      const remoteData = await loadFromSupabase();
+      if (remoteData && remoteData.transactions && remoteData.bankAccounts) {
+        onRestoreData(remoteData);
+        setSuccessMsg('Sincronização concluída! Dados carregados e aplicados com sucesso deste dispositivo.');
+      } else {
+        // 2. If empty remote DB, backup local state to initialize it
+        const ok = await saveToSupabase(financialData);
+        if (ok) {
+          setSuccessMsg('Dados locais exportados para o Supabase com sucesso para iniciar seu banco em nuvem!');
+        } else {
+          setErrorMsg('Sem tabelas de dados no Supabase. Execute o comando SQL no painel de controle do Supabase.');
+        }
+      }
+    } catch (e: any) {
+      setErrorMsg('Falha na sincronização: ' + e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Clear connection string
+  const handleClearSupabase = () => {
+    localStorage.removeItem('fp_custom_supabase_url');
+    localStorage.removeItem('fp_custom_supabase_key');
+    setCustomSupabaseUrl('');
+    setCustomSupabaseKey('');
+    initSupabaseClient();
+    setIsCurrentlyConfigured(isSupabaseConfigured);
+    setSuccessMsg('Integração Supabase removida. Os dados permanecem salvos localmente neste navegador.');
+  };
 
   // Clear messages after 5 seconds
   useEffect(() => {
@@ -287,85 +370,110 @@ export default function GithubSync({ financialData, onRestoreData }: GithubSyncP
           <div className="bg-white border border-zinc-150 p-6 rounded-2xl shadow-sm space-y-5">
             <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
               <div className="flex items-center gap-2">
-                <Database size={16} className={isSupabaseConfigured ? "text-emerald-500" : "text-zinc-400"} />
-                <h3 className="text-sm font-bold text-zinc-800 uppercase tracking-wide font-sans">Banco de Dados Supabase</h3>
+                <Database size={16} className={isCurrentlyConfigured ? "text-emerald-500" : "text-zinc-400"} />
+                <h3 className="text-sm font-bold text-zinc-800 uppercase tracking-wide font-sans">Banco de Dados Cloud (Supabase)</h3>
               </div>
               
               <div className="flex items-center gap-1.5">
-                <span className={`w-2 h-2 rounded-full ${isSupabaseConfigured ? "bg-emerald-500 animate-pulse" : "bg-amber-400"}`}></span>
+                <span className={`w-2 h-2 rounded-full ${isCurrentlyConfigured ? "bg-emerald-500 animate-pulse" : "bg-amber-400"}`}></span>
                 <span className="text-[10px] font-bold text-zinc-500 uppercase">
-                  {isSupabaseConfigured ? "Supabase Ativo" : "Armazenamento Local"}
+                  {isCurrentlyConfigured ? "Conectado à Nuvem" : "Offline / Local"}
                 </span>
               </div>
             </div>
 
             <div className="space-y-4 text-xs text-zinc-650 leading-relaxed">
-              {/* Variable Diagnostics Table */}
-              <div className="bg-zinc-50 border border-zinc-150 rounded-xl p-3.5 space-y-2">
-                <p className="font-bold text-[11px] text-zinc-800">Status das Variáveis no Navegador:</p>
-                <div className="space-y-1.5 text-[10px] font-mono">
-                  <div className="flex items-center justify-between border-b border-zinc-100 pb-1">
-                    <span className="text-zinc-500">VITE_SUPABASE_URL</span>
-                    <span className={supabaseDiagnostics.hasUrl ? "text-emerald-600 font-bold" : "text-rose-500 font-bold"}>
-                      {supabaseDiagnostics.hasUrl ? "Detectada ✓" : "Não encontrada ✗"}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-zinc-500">VITE_SUPABASE_ANON_KEY</span>
-                    <span className={supabaseDiagnostics.hasAnonKey ? "text-emerald-600 font-bold" : "text-rose-500 font-bold"}>
-                      {supabaseDiagnostics.hasAnonKey ? "Detectada ✓" : "Não encontrada ✗"}
-                    </span>
-                  </div>
+              <p className="text-[11px] leading-relaxed">
+                Adicione as credenciais do seu projeto gratuito do <strong>Supabase</strong> para que seus lançamentos, faturas e limites sejam salvos em tempo real na nuvem de forma segura e sincronizados automaticamente em todos os seus dispositivos (celular, tablet e computador).
+              </p>
+
+              {/* Dynamic status/credentials form fields */}
+              <div className="space-y-3 pt-1">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-500 block">Supabase URL</label>
+                  <input
+                    type="text"
+                    disabled={isCurrentlyConfigured}
+                    placeholder="https://xyzabcdefg.supabase.co"
+                    value={customSupabaseUrl}
+                    onChange={(e) => setCustomSupabaseUrl(e.target.value)}
+                    className="w-full bg-zinc-50 border border-zinc-200 rounded-xl py-2 px-3 text-xs text-zinc-800 placeholder-zinc-400 focus:outline-none focus:border-zinc-950 transition-colors disabled:opacity-60"
+                  />
                 </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-500 block">Supabase Anon Key</label>
+                  <input
+                    type="password"
+                    disabled={isCurrentlyConfigured}
+                    placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                    value={customSupabaseKey}
+                    onChange={(e) => setCustomSupabaseKey(e.target.value)}
+                    className="w-full bg-zinc-50 border border-zinc-200 rounded-xl py-2 px-3 text-xs text-zinc-800 placeholder-zinc-400 focus:outline-none focus:border-zinc-950 transition-colors disabled:opacity-60"
+                  />
+                </div>
+
+                {isCurrentlyConfigured ? (
+                  <div className="space-y-3 pt-1">
+                    <div className="flex gap-2.5">
+                      <button
+                        onClick={handleSyncSupabaseNow}
+                        disabled={loading}
+                        className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] rounded-xl py-2 px-3 flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                      >
+                        {loading ? <RefreshCw size={12} className="animate-spin" /> : <RefreshCw size={12} />}
+                        Sincronizar Dispositivo Agora
+                      </button>
+                      <button
+                        onClick={handleClearSupabase}
+                        className="bg-zinc-100 hover:bg-zinc-200 text-zinc-700 font-semibold text-[11px] rounded-xl py-2 px-3 transition-colors cursor-pointer"
+                      >
+                        Desconectar
+                      </button>
+                    </div>
+                    <div className="bg-emerald-50/50 border border-emerald-100 p-3 rounded-xl text-emerald-800 text-[10px] space-y-1">
+                      <p className="font-bold flex items-center gap-1">
+                        <Check size={12} />
+                        Sincronização Ativa em Segundo Plano!
+                      </p>
+                      <p className="leading-snug">
+                        Qualquer transação, exclusão de gasto ou alteração de saldo adicionada por você neste dispositivo agora é salva instantaneamente na nuvem do seu Supabase.
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="pt-1">
+                    <button
+                      onClick={handleSaveSupabase}
+                      className="w-full bg-zinc-950 hover:bg-zinc-900 text-white font-bold text-[11px] rounded-xl py-2 px-3 flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                    >
+                      <Database size={12} />
+                      Conectar e Ativar Sincronização
+                    </button>
+                  </div>
+                )}
               </div>
 
-              {isSupabaseConfigured ? (
-                <div className="space-y-3">
-                  <div className="bg-emerald-50/50 border border-emerald-100 p-3.5 rounded-xl text-emerald-800 space-y-1">
-                    <p className="font-bold">Totalmente Sincronizado com Supabase!</p>
-                    <p className="text-[11px] leading-relaxed">
-                      Seus dados de transações e faturas estão sendo persistidos de forma segura e síncrona em tempo real na tabela <code>financial_data</code> do seu banco Postgres no Supabase.
-                    </p>
-                  </div>
-                  <div className="p-1 space-y-1 text-zinc-500">
-                    <p><strong>URL do Supabase Conectada:</strong></p>
-                    <code className="block bg-zinc-50 border border-zinc-150 p-2 rounded-lg font-mono text-[10px] text-zinc-700 break-all select-all">
-                      {supabaseConfig.url}
-                    </code>
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  <p className="text-[11px] text-amber-750 bg-amber-50/40 border border-amber-100 p-3 rounded-xl leading-relaxed">
-                    <strong>Atenção:</strong> O Supabase está **Inativo** temporariamente porque suas chaves de ambiente não foram mapeadas na hospedagem (Netlify, Vercel, etc.) ou no AI Studio Build. Para disponibilizar as variáveis na build estática do React/Vite, elas PRECISAM obrigatoriamente começar com <strong>VITE_</strong>.
-                  </p>
-                  
-                  <div className="bg-zinc-50 border border-zinc-150 p-4 rounded-xl space-y-3">
-                    <h4 className="font-bold text-zinc-800 flex items-center gap-1.5 font-sans">
-                      <Server size={14} className="text-zinc-500" />
-                      Como mapear no Netlify / Hospedagem:
-                    </h4>
-                    <ol className="list-decimal list-inside space-y-2 text-zinc-600 text-[11px]">
-                      <li>Crie um projeto gratuito em <a href="https://supabase.com" target="_blank" rel="noopener noreferrer" className="text-zinc-900 border-b border-zinc-900 font-semibold inline-flex items-center gap-0.5">Supabase <ExternalLink size={10} /></a>.</li>
-                      <li>Vá no **SQL Editor** do Supabase e execute este comando SQL para criar a tabela necessária:
-                        <pre className="mt-1.5 bg-zinc-900 text-zinc-100 p-2 rounded-lg text-[9px] font-mono whitespace-pre overflow-x-auto select-all">
+              {/* Collapsible/Small Setup SQL Guide */}
+              <div className="bg-zinc-50 border border-zinc-150 p-4 rounded-xl space-y-2.5">
+                <h4 className="font-bold text-zinc-800 flex items-center gap-1.5 font-sans">
+                  <Server size={14} className="text-zinc-500" />
+                  Como criar seu banco gratuito:
+                </h4>
+                <ol className="list-decimal list-inside space-y-1.5 text-zinc-600 text-[11px]">
+                  <li>Faça login ou crie uma conta grátis em <a href="https://supabase.com" target="_blank" rel="noopener noreferrer" className="text-zinc-900 border-b border-zinc-900 font-semibold inline-flex items-center gap-0.5">Supabase <ExternalLink size={10} /></a> (leva 30 seg).</li>
+                  <li>No menu do projeto, acesse o <strong>SQL Editor</strong> &gt; <strong>New Query</strong>, cole o código abaixo e clique em <strong>Run</strong>:
+                    <pre className="mt-1.5 bg-zinc-900 text-zinc-100 p-2 rounded-lg text-[10px] font-mono whitespace-pre overflow-x-auto select-all">
 {`create table financial_data (
   id text primary key,
   data jsonb not null
 );`}
-                        </pre>
-                      </li>
-                      <li>Acesse **Project Settings** &gt; **API** no console do Supabase e obtenha a URL e a Anon Key.</li>
-                      <li>Adicione as variáveis correspondentes no painel de segredos da sua plataforma (ex: Netlify):
-                        <div className="mt-1.5 bg-white/70 border border-zinc-100 p-2 rounded-lg text-[10px] font-mono text-zinc-500 space-y-1 pl-3">
-                          <div>• <span className="font-semibold text-zinc-800">VITE_SUPABASE_URL</span></div>
-                          <div>• <span className="font-semibold text-zinc-800">VITE_SUPABASE_ANON_KEY</span></div>
-                        </div>
-                      </li>
-                    </ol>
-                  </div>
-                </div>
-              )}
+                    </pre>
+                  </li>
+                  <li>Entre em <strong>Project Settings</strong> &gt; <strong>API</strong>, copie a <strong>Project URL</strong> e a <strong>anon public API Key</strong> para os campos acima.</li>
+                </ol>
+              </div>
+
             </div>
           </div>
 

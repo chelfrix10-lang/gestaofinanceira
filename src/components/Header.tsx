@@ -14,7 +14,7 @@ import {
   RefreshCw,
   TrendingUp,
   Percent,
-  Github
+  CloudLightning
 } from 'lucide-react';
 
 interface HeaderProps {
@@ -32,7 +32,7 @@ export default function Header({ currentTab, onSelectTab, onResetData, resetLoad
     { id: 'history', name: 'Histórico & Faturas', icon: <History size={16} /> },
     { id: 'add', name: 'Lançar Gasto', icon: <PlusCircle size={16} /> },
     { id: 'ai-chat', name: 'Assistente IA', icon: <Bot size={16} /> },
-    { id: 'github', name: 'Integração GitHub', icon: <Github size={16} /> },
+    { id: 'github', name: 'Nuvem e Sincronização', icon: <RefreshCw size={16} /> },
   ];
 
   return (

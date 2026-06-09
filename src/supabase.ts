@@ -23,46 +23,85 @@ const cleanEnvVar = (val: any): string => {
 const supabaseUrl = cleanEnvVar(import.meta.env.VITE_SUPABASE_URL);
 const supabaseAnonKey = cleanEnvVar(import.meta.env.VITE_SUPABASE_ANON_KEY);
 
+export function getSupabaseCredentials() {
+  const envUrl = import.meta.env.VITE_SUPABASE_URL;
+  const envKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+  
+  const localUrl = localStorage.getItem('fp_custom_supabase_url');
+  const localKey = localStorage.getItem('fp_custom_supabase_key');
+  
+  const url = cleanEnvVar(envUrl || localUrl || '');
+  const key = cleanEnvVar(envKey || localKey || '');
+  
+  return { 
+    url, 
+    key, 
+    isCustom: !envUrl && !!localUrl 
+  };
+}
+
 export const supabaseConfig = {
-  url: supabaseUrl,
-  anonKey: supabaseAnonKey
+  get url() {
+    return getSupabaseCredentials().url;
+  },
+  get anonKey() {
+    return getSupabaseCredentials().key;
+  }
 };
 
 // Diagnostics to help the user configure Supabase on Netlify or client-side
 export const supabaseDiagnostics = {
-  hasUrl: !!supabaseUrl,
-  hasAnonKey: !!supabaseAnonKey,
-  rawDetails: {
-    url: supabaseUrl || 'não definida',
-    anonKeyLength: supabaseAnonKey ? supabaseAnonKey.length : 0
+  get hasUrl() {
+    return !!getSupabaseCredentials().url;
+  },
+  get hasAnonKey() {
+    return !!getSupabaseCredentials().key;
+  },
+  get rawDetails() {
+    const { url, key } = getSupabaseCredentials();
+    return {
+      url: url || 'não definida',
+      anonKeyLength: key ? key.length : 0
+    };
   }
 };
 
-const isValidConfig = !!(
-  supabaseUrl &&
-  supabaseUrl.startsWith('https://') &&
-  supabaseAnonKey &&
-  supabaseAnonKey.length > 20
-);
+export let supabase: any = null;
+export let isSupabaseConfigured = false;
 
-let clientInstance: any = null;
+export function initSupabaseClient() {
+  const { url, key } = getSupabaseCredentials();
+  
+  const isValidConfig = !!(
+    url &&
+    url.startsWith('https://') &&
+    key &&
+    key.length > 20
+  );
 
-if (isValidConfig) {
-  try {
-    clientInstance = createClient(supabaseUrl, supabaseAnonKey, {
-      auth: {
-        persistSession: true,
-        autoRefreshToken: true
-      }
-    });
-  } catch (error) {
-    console.error("Erro na inicialização do Supabase client:", error);
-    clientInstance = null;
+  if (isValidConfig) {
+    try {
+      supabase = createClient(url, key, {
+        auth: {
+          persistSession: true,
+          autoRefreshToken: true
+        }
+      });
+      isSupabaseConfigured = true;
+      console.log("Supabase client initialized successfully with:", url);
+    } catch (error) {
+      console.error("Erro na inicialização do Supabase client:", error);
+      supabase = null;
+      isSupabaseConfigured = false;
+    }
+  } else {
+    supabase = null;
+    isSupabaseConfigured = false;
   }
 }
 
-export const supabase = clientInstance;
-export const isSupabaseConfigured = !!supabase;
+// Execute initial load
+initSupabaseClient();
 
 /**
  * Saves financial data to Supabase in a 'financial_data' table
