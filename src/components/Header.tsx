@@ -47,7 +47,7 @@ export default function Header({ currentTab, onSelectTab, onResetData, resetLoad
             </div>
             <div>
               <h1 className="font-bold text-zinc-900 text-lg leading-tight flex items-center gap-1.5">
-                Finanças Pessoais <span className="bg-zinc-100 text-zinc-700 text-[10px] font-bold py-0.5 px-2 rounded-full border border-zinc-200">2024-2026</span>
+                Finanças Pessoais
               </h1>
               <p className="text-xs text-zinc-500 leading-none mt-1">Análise, faturas dos cartões e assistente IA integrado</p>
             </div>

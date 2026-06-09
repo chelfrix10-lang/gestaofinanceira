@@ -10,7 +10,7 @@ import InvoiceExplorer from './components/InvoiceExplorer';
 import TransactionForm from './components/TransactionForm';
 import AIChat from './components/AIChat';
 import GithubSync from './components/GithubSync';
-import { FinancialData, ChatMessage } from './types';
+import { FinancialData, ChatMessage, BankAccount } from './types';
 import { Loader2, Bot, AlertTriangle } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { RAW_CSV_DATA } from './data/raw_data';
@@ -349,6 +349,45 @@ Como estou rodando em **modo offline resiliente** para garantir que você não p
     }
   };
 
+  // Update bank accounts balances
+  const handleUpdateBankAccounts = async (updatedAccounts: BankAccount[]) => {
+    let localUpdatedData: any = null;
+    if (financialData) {
+      const copy = JSON.parse(JSON.stringify(financialData));
+      copy.bankAccounts = updatedAccounts;
+      recalculateLocalSummary(copy);
+      localUpdatedData = copy;
+      setFinancialData(localUpdatedData);
+      localStorage.setItem('user_financial_data', JSON.stringify(localUpdatedData));
+      if (isFirebaseConfigured) {
+        saveToFirebase(localUpdatedData).catch(() => {});
+      }
+    }
+
+    try {
+      if (localUpdatedData) {
+        const response = await fetch('/api/sync/restore', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ data: localUpdatedData }),
+        });
+        const contentType = response.headers.get('content-type') || '';
+        if (contentType.includes('application/json')) {
+          const json = await response.json();
+          if (json.success) {
+            setFinancialData(json.data);
+            localStorage.setItem('user_financial_data', JSON.stringify(json.data));
+            if (isFirebaseConfigured) {
+              await saveToFirebase(json.data);
+            }
+          }
+        }
+      }
+    } catch (err) {
+      console.warn("Server accounts balance sync bypassed, functioning locally.");
+    }
+  };
+
   // Reset to static CSV state from backend memory
   const handleResetData = async () => {
     setResetLoading(true);
@@ -465,6 +504,7 @@ Como estou rodando em **modo offline resiliente** para garantir que você não p
                 bankAccounts={financialData.bankAccounts}
                 summary={financialData.summary}
                 onSelectTab={setCurrentTab}
+                onUpdateBankAccounts={handleUpdateBankAccounts}
               />
             </motion.div>
           )}

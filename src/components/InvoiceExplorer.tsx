@@ -320,34 +320,20 @@ export default function InvoiceExplorer({ transactions, onUpdateCategory, onUpda
                       
                       {/* Checkbox for Debitada Option */}
                       <div className="flex items-center self-center shrink-0 mr-1">
-                        {tx.id.startsWith('custom-') ? (
-                          <button
-                            type="button"
-                            onClick={() => onUpdateDebited(tx.id, !tx.debited)}
-                            className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all cursor-pointer ${
-                              tx.debited
-                                ? 'bg-emerald-600 border-emerald-600 text-white shadow-sm'
-                                : 'bg-zinc-50 border-zinc-300 text-transparent hover:border-zinc-400'
-                            }`}
-                            title={tx.debited ? "Marcar como não debitada" : "Marcar como debitada"}
-                          >
-                            <svg className="w-3.5 h-3.5 stroke-[3.5]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                            </svg>
-                          </button>
-                        ) : (
-                          // Original transactions are historical and already debited
-                          <button
-                            type="button"
-                            disabled
-                            className="w-5 h-5 rounded-md bg-emerald-50 border border-emerald-100 text-emerald-500 flex items-center justify-center cursor-not-allowed"
-                            title="Fatura histórica já debitada"
-                          >
-                            <svg className="w-3.5 h-3.5 stroke-[3.5]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                            </svg>
-                          </button>
-                        )}
+                        <button
+                          type="button"
+                          onClick={() => onUpdateDebited(tx.id, tx.debited === false)}
+                          className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all cursor-pointer ${
+                            tx.debited !== false
+                              ? 'bg-emerald-600 border-emerald-600 text-white shadow-sm'
+                              : 'bg-zinc-50 border-zinc-300 text-transparent hover:border-zinc-400'
+                          }`}
+                          title={tx.debited !== false ? "Marcar como não debitada" : "Marcar como debitada"}
+                        >
+                          <svg className="w-3.5 h-3.5 stroke-[3.5]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                          </svg>
+                        </button>
                       </div>
 
                       <div className={`mt-0.5 rounded-xl p-2.5 shrink-0 ${
@@ -371,16 +357,14 @@ export default function InvoiceExplorer({ transactions, onUpdateCategory, onUpda
                               Lançamento
                             </span>
                           )}
-                          {tx.id.startsWith('custom-') && (
-                            tx.debited ? (
-                              <span className="bg-emerald-50 text-emerald-700 border border-emerald-100 font-semibold text-[9px] px-1.5 py-0.5 rounded-full">
-                                Debitado
-                              </span>
-                            ) : (
-                              <span className="bg-zinc-100 text-zinc-500 border border-zinc-200 font-semibold text-[9px] px-1.5 py-0.5 rounded-full flex items-center gap-1">
-                                <span className="w-1.5 h-1.5 rounded-full bg-zinc-400" /> Não Debitado
-                              </span>
-                            )
+                          {tx.debited !== false ? (
+                            <span className="bg-emerald-50 text-emerald-700 border border-emerald-100 font-semibold text-[9px] px-1.5 py-0.5 rounded-full">
+                              Debitado
+                            </span>
+                          ) : (
+                            <span className="bg-zinc-100 text-zinc-500 border border-zinc-200 font-semibold text-[9px] px-1.5 py-0.5 rounded-full flex items-center gap-1">
+                              <span className="w-1.5 h-1.5 rounded-full bg-zinc-400" /> Não Debitado
+                            </span>
                           )}
                         </div>
  

@@ -15,7 +15,12 @@ import {
   Coins,
   ChevronRight,
   ShieldCheck,
-  Percent
+  Percent,
+  Pencil,
+  Plus,
+  Trash2,
+  Save,
+  X
 } from 'lucide-react';
 import { motion } from 'motion/react';
 
@@ -24,11 +29,70 @@ interface DashboardProps {
   bankAccounts: BankAccount[];
   summary: BudgetSummary;
   onSelectTab: (tab: string) => void;
+  onUpdateBankAccounts?: (accounts: BankAccount[]) => void;
 }
 
-export default function Dashboard({ transactions, bankAccounts, summary, onSelectTab }: DashboardProps) {
+export default function Dashboard({ transactions, bankAccounts, summary, onSelectTab, onUpdateBankAccounts }: DashboardProps) {
   const [hoveredSlice, setHoveredSlice] = useState<string | null>(null);
   const [hoveredBar, setHoveredBar] = useState<string | null>(null);
+
+  // Bank accounts edit modal state
+  const [isEditingAccounts, setIsEditingAccounts] = useState(false);
+  const [editingAccounts, setEditingAccounts] = useState<BankAccount[]>([]);
+
+  // Open modal and load copy of current accounts
+  const openEditAccountsModal = () => {
+    setEditingAccounts(JSON.parse(JSON.stringify(bankAccounts)));
+    setIsEditingAccounts(true);
+  };
+
+  // Handle saving the modified accounts
+  const saveEditedAccounts = () => {
+    if (onUpdateBankAccounts) {
+      onUpdateBankAccounts(editingAccounts);
+    }
+    setIsEditingAccounts(false);
+  };
+
+  // Modify individual account name
+  const handleAccountNameChange = (index: number, newName: string) => {
+    const copy = [...editingAccounts];
+    copy[index].name = newName;
+    setEditingAccounts(copy);
+  };
+
+  // Modify individual account base value
+  const handleAccountValueChange = (index: number, valStr: string) => {
+    const copy = [...editingAccounts];
+    const val = parseFloat(valStr) || 0;
+    copy[index].value = val;
+    setEditingAccounts(copy);
+  };
+
+  // Modify individual account extras array
+  const handleAccountExtrasChange = (index: number, extrasStr: string) => {
+    const copy = [...editingAccounts];
+    const extrasArr = extrasStr
+      .split(',')
+      .map(part => parseFloat(part.trim()))
+      .filter(num => !isNaN(num));
+    copy[index].extras = extrasArr;
+    setEditingAccounts(copy);
+  };
+
+  // Remove an account
+  const removeAccount = (index: number) => {
+    const copy = editingAccounts.filter((_, idx) => idx !== index);
+    setEditingAccounts(copy);
+  };
+
+  // Add a brand new account
+  const addAccount = () => {
+    setEditingAccounts([
+      ...editingAccounts,
+      { name: 'Nova Conta', value: 0, extras: [] }
+    ]);
+  };
 
   // Core computations
   const totalSpent = useMemo(() => {
@@ -538,12 +602,21 @@ export default function Dashboard({ transactions, bankAccounts, summary, onSelec
 
       {/* Under bento: Current Bank Accounts lists */}
       <div id="accounts-row" className="bg-white border border-zinc-100 rounded-2xl p-6 shadow-sm">
-        <div className="flex items-center justify-between mb-5">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-5">
           <div>
             <h3 className="font-semibold text-zinc-900 text-lg">Saldos Disponíveis em Contas</h3>
             <p className="text-xs text-zinc-400">Dados declarados das reservas liquidas do orçamento pessoal</p>
           </div>
-          <span className="text-xs text-zinc-400 font-mono">Total em Conta: R$ {totalAccountBalance.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+          <div className="flex items-center gap-3 self-start sm:self-center">
+            <span className="text-xs text-zinc-400 font-mono">Total: R$ {totalAccountBalance.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+            <button 
+              onClick={openEditAccountsModal}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-zinc-200 text-zinc-700 bg-zinc-50 hover:bg-zinc-100 text-xs font-bold select-none cursor-pointer transition-all shadow-sm"
+            >
+              <Pencil size={12} />
+              Editar Saldos
+            </button>
+          </div>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
@@ -579,6 +652,106 @@ export default function Dashboard({ transactions, bankAccounts, summary, onSelec
           })}
         </div>
       </div>
+
+      {/* Modal de Edição de Saldos */}
+      {isEditingAccounts && (
+        <div id="edit-accounts-modal" className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm z-[99999]">
+          <div className="bg-white rounded-2xl shadow-xl border border-zinc-100 max-w-2xl w-full max-h-[85vh] flex flex-col">
+            <div className="p-6 border-b border-zinc-100 flex items-center justify-between">
+              <div>
+                <h3 className="font-bold text-zinc-900 text-lg">Editar Saldos & Contas</h3>
+                <p className="text-xs text-zinc-400">Modifique os valores disponíveis nas suas contas ativas</p>
+              </div>
+              <button 
+                onClick={() => setIsEditingAccounts(false)}
+                className="p-1.5 rounded-lg text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700 transition-all cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="p-6 overflow-y-auto space-y-4 flex-1">
+              <div className="space-y-3">
+                {editingAccounts.map((account, index) => (
+                  <div key={index} className="p-4 border border-zinc-100 rounded-xl bg-zinc-50/50 flex flex-col md:flex-row md:items-center gap-3 relative group">
+                    <div className="flex-1 space-y-1">
+                      <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">Nome do Banco / Conta</label>
+                      <input 
+                        type="text"
+                        value={account.name}
+                        onChange={(e) => handleAccountNameChange(index, e.target.value)}
+                        className="w-full text-xs font-semibold px-3 py-2 border border-zinc-200 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-zinc-900 focus:border-zinc-900 transition-all text-zinc-800"
+                        placeholder="Ex: Nubank, Banco Inter"
+                      />
+                    </div>
+                    
+                    <div className="w-full md:w-32 space-y-1">
+                      <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">Saldo Base (R$)</label>
+                      <input 
+                        type="number"
+                        step="any"
+                        value={account.value}
+                        onChange={(e) => handleAccountValueChange(index, e.target.value)}
+                        className="w-full text-xs font-mono font-semibold px-3 py-2 border border-zinc-200 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-zinc-900 focus:border-zinc-900 transition-all text-zinc-800"
+                        placeholder="0.00"
+                      />
+                    </div>
+
+                    <div className="flex-1 space-y-1">
+                      <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">
+                        Valores Extras (separados por vírgula)
+                      </label>
+                      <input 
+                        type="text"
+                        value={account.extras ? account.extras.join(', ') : ''}
+                        onChange={(e) => handleAccountExtrasChange(index, e.target.value)}
+                        className="w-full text-xs font-mono px-3 py-2 border border-zinc-200 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-zinc-900 focus:border-zinc-900 transition-all text-zinc-600"
+                        placeholder="Ex: 100.50, 450"
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-end md:self-end md:mb-1">
+                      <button 
+                        type="button"
+                        onClick={() => removeAccount(index)}
+                        className="p-2 rounded-lg text-rose-500 hover:bg-rose-50 border border-transparent hover:border-rose-100 transition-all cursor-pointer"
+                        title="Excluir Conta"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <button 
+                type="button"
+                onClick={addAccount}
+                className="w-full py-3 border border-dashed border-zinc-200 hover:border-zinc-400 hover:bg-zinc-50 rounded-xl text-zinc-500 hover:text-zinc-800 text-xs font-medium flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+              >
+                <Plus size={14} />
+                Adicionar Nova Conta
+              </button>
+            </div>
+
+            <div className="p-6 border-t border-zinc-100 bg-zinc-50/50 rounded-b-2xl flex items-center justify-end gap-3 font-medium">
+              <button 
+                onClick={() => setIsEditingAccounts(false)}
+                className="px-4 py-2 border border-zinc-200 rounded-xl bg-white hover:bg-zinc-100 text-zinc-700 text-xs font-bold cursor-pointer transition-all"
+              >
+                Cancelar
+              </button>
+              <button 
+                onClick={saveEditedAccounts}
+                className="px-4 py-2 bg-zinc-950 hover:bg-zinc-900 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-sm transition-all"
+              >
+                <Save size={14} />
+                Salvar Alterações
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );
