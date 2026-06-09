@@ -148,40 +148,75 @@ async function startServer() {
     }
   });
 
-  // API Route: Add a new transaction
+  // API Route: Add a new transaction or bulk transactions
   app.post('/api/transactions', (req, res) => {
     try {
-      const { local, date, month, year, form, value, card, category, debited } = req.body;
+      const payload = req.body;
       
-      if (!local || !value || !card) {
-        return res.status(400).json({
-          success: false,
-          error: 'Local, Valor e Cartão são campos obrigatórios.',
+      if (Array.isArray(payload)) {
+        const addedTxs: Transaction[] = [];
+        payload.forEach((item, index) => {
+          const { local, date, month, year, form, value, card, category, debited } = item;
+          if (local && value && card) {
+            addedTxs.push({
+              id: `custom-${Date.now()}-${index}`,
+              local,
+              date: date || new Date().toLocaleDateString('pt-BR'),
+              year: parseInt(year) || 2026,
+              month: month || 'Junho',
+              form: form || 'À Vista',
+              value: parseFloat(value),
+              card,
+              category: category || 'Outros & Transferências',
+              isMom: local.toLowerCase().includes('(mãe)'),
+              debited: debited === true || debited === 'true',
+            });
+          }
         });
+
+        if (addedTxs.length === 0) {
+          return res.status(400).json({
+            success: false,
+            error: 'Nenhum lançamento válido enviado.',
+          });
+        }
+
+        parsedData.transactions = [...addedTxs, ...parsedData.transactions];
+        parsedData.updatedAt = Date.now();
+        recalculateSummary(parsedData);
+        saveDatabase();
+        return res.json({ success: true, transactions: addedTxs, data: parsedData });
+      } else {
+        const { local, date, month, year, form, value, card, category, debited } = payload;
+        
+        if (!local || !value || !card) {
+          return res.status(400).json({
+            success: false,
+            error: 'Local, Valor e Cartão são campos obrigatórios.',
+          });
+        }
+
+        const newTx: Transaction = {
+          id: `custom-${Date.now()}`,
+          local,
+          date: date || new Date().toLocaleDateString('pt-BR'),
+          year: parseInt(year) || 2026,
+          month: month || 'Junho',
+          form: form || 'À Vista',
+          value: parseFloat(value),
+          card,
+          category: category || 'Outros & Transferências',
+          isMom: local.toLowerCase().includes('(mãe)'),
+          debited: debited === true || debited === 'true',
+        };
+
+        parsedData.transactions.unshift(newTx);
+        parsedData.updatedAt = Date.now();
+        recalculateSummary(parsedData);
+        saveDatabase();
+
+        return res.json({ success: true, transaction: newTx, data: parsedData });
       }
-
-      const newTx: Transaction = {
-        id: `custom-${Date.now()}`,
-        local,
-        date: date || new Date().toLocaleDateString('pt-BR'),
-        year: parseInt(year) || 2026,
-        month: month || 'Junho',
-        form: form || 'À Vista',
-        value: parseFloat(value),
-        card,
-        category: category || 'Outros & Transferências',
-        isMom: local.toLowerCase().includes('(mãe)'),
-        debited: debited === true || debited === 'true',
-      };
-
-      parsedData.transactions.unshift(newTx);
-      parsedData.updatedAt = Date.now();
-      
-      // Recalculate summary dynamically
-      recalculateSummary(parsedData);
-      saveDatabase();
-
-      res.json({ success: true, transaction: newTx, data: parsedData });
     } catch (err: any) {
       res.status(500).json({ success: false, error: err.message });
     }
@@ -219,6 +254,30 @@ async function startServer() {
       }
 
       tx.debited = debited === true || debited === 'true';
+
+      parsedData.updatedAt = Date.now();
+
+      // Recalculate summary dynamically
+      recalculateSummary(parsedData);
+      saveDatabase();
+
+      res.json({ success: true, data: parsedData });
+    } catch (err: any) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
+  // API Route: Delete a transaction
+  app.delete('/api/transactions/:id', (req, res) => {
+    try {
+      const { id } = req.params;
+
+      const initialLength = parsedData.transactions.length;
+      parsedData.transactions = parsedData.transactions.filter((t) => t.id !== id);
+
+      if (parsedData.transactions.length === initialLength) {
+        return res.status(404).json({ success: false, error: 'Transação não encontrada.' });
+      }
 
       parsedData.updatedAt = Date.now();
 

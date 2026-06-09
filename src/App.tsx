@@ -298,37 +298,47 @@ Como estou rodando em **modo offline resiliente** para garantir que você não p
     checkSession();
   }, []);
 
-  // Sync manual spending inputs to Backend Cache
-  const handleAddTransaction = async (data: {
-    local: string;
-    value: number;
-    date: string;
-    card: string;
-    category: string;
-    form: string;
-    month: string;
-    year: number;
-    debited?: boolean;
-  }): Promise<boolean> => {
-    const newTx = {
-      id: `custom-${Date.now()}`,
-      local: data.local,
-      date: data.date || new Date().toLocaleDateString('pt-BR'),
-      year: Number(data.year) || 2026,
-      month: data.month || 'Junho',
-      form: data.form || 'À Vista',
-      value: Number(data.value),
-      card: data.card,
-      category: data.category || 'Outros & Transferências',
-      isMom: data.local.toLowerCase().includes('(mãe)'),
-      debited: data.debited === true,
-    };
+  // Sync manual spending inputs to Backend Cache (supports bulk array or single transaction)
+  const handleAddTransaction = async (data: any): Promise<boolean> => {
+    const newTxs: any[] = [];
+    
+    if (Array.isArray(data)) {
+      data.forEach((item, index) => {
+        newTxs.push({
+          id: `custom-${Date.now()}-${index}`,
+          local: item.local,
+          date: item.date || new Date().toLocaleDateString('pt-BR'),
+          year: Number(item.year) || 2026,
+          month: item.month || 'Junho',
+          form: item.form || 'À Vista',
+          value: Number(item.value),
+          card: item.card,
+          category: item.category || 'Outros & Transferências',
+          isMom: item.local.toLowerCase().includes('(mãe)'),
+          debited: item.debited === true,
+        });
+      });
+    } else {
+      newTxs.push({
+        id: `custom-${Date.now()}`,
+        local: data.local,
+        date: data.date || new Date().toLocaleDateString('pt-BR'),
+        year: Number(data.year) || 2026,
+        month: data.month || 'Junho',
+        form: data.form || 'À Vista',
+        value: Number(data.value),
+        card: data.card,
+        category: data.category || 'Outros & Transferências',
+        isMom: data.local.toLowerCase().includes('(mãe)'),
+        debited: data.debited === true,
+      });
+    }
 
     // Optimistic Local mutation
     let localUpdatedData: any = null;
     if (financialData) {
       const copy = JSON.parse(JSON.stringify(financialData));
-      copy.transactions.unshift(newTx);
+      copy.transactions = [...newTxs, ...copy.transactions];
       copy.updatedAt = Date.now();
       recalculateLocalSummary(copy);
       localUpdatedData = copy;
@@ -440,6 +450,47 @@ Como estou rodando em **modo offline resiliente** para garantir que você não p
       }
     } catch (err) {
       console.warn("Debited status update sync bypassed, functioning locally.");
+    }
+  };
+
+  // Delete a transaction from list
+  const handleDeleteTransaction = async (id: string) => {
+    let localUpdatedData: any = null;
+    if (financialData) {
+      const copy = JSON.parse(JSON.stringify(financialData));
+      const initialLength = copy.transactions.length;
+      copy.transactions = copy.transactions.filter((t: any) => t.id !== id);
+      
+      if (copy.transactions.length !== initialLength) {
+        copy.updatedAt = Date.now();
+        recalculateLocalSummary(copy);
+        localUpdatedData = copy;
+        setFinancialData(localUpdatedData);
+        localStorage.setItem('user_financial_data', JSON.stringify(localUpdatedData));
+        if (isSupabaseConfigured) {
+          saveToSupabase(localUpdatedData).catch(() => {});
+        }
+      }
+    }
+
+    try {
+      const response = await fetch(`/api/transactions/${id}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      const contentType = response.headers.get('content-type') || '';
+      if (contentType.includes('application/json')) {
+        const json = await response.json();
+        if (json.success) {
+          setFinancialData(json.data);
+          localStorage.setItem('user_financial_data', JSON.stringify(json.data));
+          if (isSupabaseConfigured) {
+            await saveToSupabase(json.data);
+          }
+        }
+      }
+    } catch (err) {
+      console.warn("Transaction deletion sync bypassed, functioning locally.");
     }
   };
 
@@ -591,6 +642,7 @@ Como estou rodando em **modo offline resiliente** para garantir que você não p
         totalSpent={totalSpent}
         userSessionInfo={userSessionInfo}
         onLogout={handleLogout}
+        activeUser={activeUser}
       />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -625,6 +677,7 @@ Como estou rodando em **modo offline resiliente** para garantir que você não p
                 transactions={financialData.transactions}
                 onUpdateCategory={handleUpdateCategory}
                 onUpdateDebited={handleUpdateDebited}
+                onDeleteTransaction={handleDeleteTransaction}
                 categories={financialData.categories}
               />
             </motion.div>

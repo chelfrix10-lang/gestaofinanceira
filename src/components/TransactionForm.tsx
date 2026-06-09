@@ -18,17 +18,7 @@ import {
 import { motion, AnimatePresence } from 'motion/react';
 
 interface TransactionFormProps {
-  onAddTransaction: (data: {
-    local: string;
-    value: number;
-    date: string;
-    card: string;
-    category: string;
-    form: string;
-    month: string;
-    year: number;
-    debited: boolean;
-  }) => Promise<boolean>;
+  onAddTransaction: (data: any) => Promise<boolean>;
   categories: string[];
 }
 
@@ -70,33 +60,90 @@ export default function TransactionForm({ onAddTransaction, categories }: Transa
 
     setLoading(true);
 
-    // Format date string from yyyy-mm-dd to dd/mm/yyyy
-    const parts = date.split('-');
-    const formattedDate = parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : '';
+    // Determine number of installments from "Em X vezes" select value
+    let numInstallments = 1;
+    if (form !== 'À Vista') {
+      const match = form.match(/Em (\d+) vezes/);
+      if (match) {
+        numInstallments = parseInt(match[1]);
+      }
+    }
 
-    const res = await onAddTransaction({
-      local: local.trim(),
-      value: numericValue,
-      date: formattedDate,
-      card,
-      category,
-      form,
-      month,
-      year: parseInt(year),
-      debited
-    });
+    if (numInstallments > 1) {
+      // Split the amount evenly
+      const splitAmount = parseFloat((numericValue / numInstallments).toFixed(2));
+      const payload: any[] = [];
+      const startMonthIndex = PORTUGUESE_MONTHS.indexOf(month);
 
-    setLoading(false);
+      for (let i = 0; i < numInstallments; i++) {
+        // Calculate billing statement month & year
+        const statementMonthIdx = (startMonthIndex + i) % 12;
+        const statementYearOffset = Math.floor((startMonthIndex + i) / 12);
+        const instMonthName = PORTUGUESE_MONTHS[statementMonthIdx];
+        const instYearNum = parseInt(year) + statementYearOffset;
 
-    if (res) {
-      setSuccess(true);
-      setLocal('');
-      setValue('');
-      setDebited(false);
-      // Auto-disappear success alert
-      setTimeout(() => setSuccess(false), 4000);
+        // Calculate transaction date
+        const [yPart, mPart, dPart] = date.split('-').map(Number);
+        const dObj = new Date(yPart, mPart - 1 + i, dPart);
+        const instDayStr = String(dObj.getDate()).padStart(2, '0');
+        const instMonthStr = String(dObj.getMonth() + 1).padStart(2, '0');
+        const instYearStr = dObj.getFullYear();
+        const instDateStr = `${instDayStr}/${instMonthStr}/${instYearStr}`;
+
+        payload.push({
+          local: `${local.trim()} (${i + 1}/${numInstallments})`,
+          value: splitAmount,
+          date: instDateStr,
+          card,
+          category,
+          form: `${form} (${i + 1}/${numInstallments})`,
+          month: instMonthName,
+          year: instYearNum,
+          debited
+        });
+      }
+
+      const res = await onAddTransaction(payload);
+      setLoading(false);
+
+      if (res) {
+        setSuccess(true);
+        setLocal('');
+        setValue('');
+        setDebited(false);
+        setTimeout(() => setSuccess(false), 4000);
+      } else {
+        setErrorMsg('Houve um erro ao registrar a transação no servidor.');
+      }
     } else {
-      setErrorMsg('Houve um erro ao registrar a transação no servidor.');
+      // Format date string from yyyy-mm-dd to dd/mm/yyyy
+      const parts = date.split('-');
+      const formattedDate = parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : '';
+
+      const res = await onAddTransaction({
+        local: local.trim(),
+        value: numericValue,
+        date: formattedDate,
+        card,
+        category,
+        form,
+        month,
+        year: parseInt(year),
+        debited
+      });
+
+      setLoading(false);
+
+      if (res) {
+        setSuccess(true);
+        setLocal('');
+        setValue('');
+        setDebited(false);
+        // Auto-disappear success alert
+        setTimeout(() => setSuccess(false), 4000);
+      } else {
+        setErrorMsg('Houve um erro ao registrar a transação no servidor.');
+      }
     }
   };
 
@@ -267,13 +314,18 @@ export default function TransactionForm({ onAddTransaction, categories }: Transa
             {/* Payment Forma */}
             <div className="space-y-1">
               <label className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider block">Forma / Parcelas</label>
-              <input
-                type="text"
+              <select
                 value={form}
                 onChange={(e) => setForm(e.target.value)}
-                placeholder="Ex: À Vista, Em 3x (parcl 1)"
-                className="w-full px-3 py-2 bg-zinc-50 border border-zinc-100 rounded-xl focus:outline-none focus:ring-1 focus:ring-zinc-900 text-xs text-zinc-750"
-              />
+                className="w-full px-3 py-2 bg-zinc-50 border border-zinc-100 rounded-xl focus:outline-none text-xs text-zinc-720 cursor-pointer pointer-events-auto"
+              >
+                <option value="À Vista">À Vista</option>
+                <option value="Em 2 vezes">Em 2 vezes</option>
+                <option value="Em 3 vezes">Em 3 vezes</option>
+                <option value="Em 4 vezes">Em 4 vezes</option>
+                <option value="Em 5 vezes">Em 5 vezes</option>
+                <option value="Em 6 vezes">Em 6 vezes</option>
+              </select>
             </div>
 
             {/* Month selector for billing statement */}

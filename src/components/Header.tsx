@@ -24,10 +24,15 @@ interface HeaderProps {
   totalSpent: number;
   userSessionInfo?: string;
   onLogout?: () => void;
+  activeUser?: any;
 }
 
-export default function Header({ currentTab, onSelectTab, totalSpent, userSessionInfo, onLogout }: HeaderProps) {
+export default function Header({ currentTab, onSelectTab, totalSpent, userSessionInfo, onLogout, activeUser }: HeaderProps) {
+  const [imgError, setImgError] = React.useState(false);
   
+  const userAvatarUrl = activeUser?.user_metadata?.avatar_url || activeUser?.avatar_url;
+  const avatarSource = userAvatarUrl || "https://i.postimg.cc/6qt06wLR/IMG-20260605-100329.png";
+
   const tabs = [
     { id: 'overview', name: 'Visão Geral', icon: <LayoutDashboard size={16} /> },
     { id: 'history', name: 'Histórico & Faturas', icon: <History size={16} /> },
@@ -43,11 +48,21 @@ export default function Header({ currentTab, onSelectTab, totalSpent, userSessio
           
           {/* Logo and info */}
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-zinc-950 text-white rounded-2xl flex items-center justify-center font-black tracking-tighter text-lg shadow-md">
-              FP
-            </div>
+            {avatarSource && !imgError ? (
+              <img 
+                src={avatarSource} 
+                alt="Perfil do Usuário" 
+                onError={() => setImgError(true)}
+                className="w-10 h-10 rounded-full object-cover border-2 border-zinc-150 shadow-md hover:scale-105 transition-all duration-300"
+                referrerPolicy="no-referrer"
+              />
+            ) : (
+              <div className="w-10 h-10 bg-zinc-950 text-white rounded-full flex items-center justify-center font-black tracking-tighter text-lg shadow-md shrink-0">
+                FP
+              </div>
+            )}
             <div>
-              <h1 className="font-bold text-zinc-900 text-lg leading-tight flex items-center gap-1.5">
+              <h1 className="font-bold text-zinc-900 text-lg leading-tight">
                 Finanças Pessoais
               </h1>
               <p className="text-xs text-zinc-500 leading-none mt-1">Análise, faturas dos cartões e assistente IA integrado</p>

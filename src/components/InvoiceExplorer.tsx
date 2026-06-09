@@ -18,7 +18,8 @@ import {
   Undo2,
   SlidersHorizontal,
   Folder,
-  FolderOpen
+  FolderOpen,
+  Trash2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -26,6 +27,7 @@ interface InvoiceExplorerProps {
   transactions: Transaction[];
   onUpdateCategory: (id: string, newCategory: string) => Promise<void>;
   onUpdateDebited: (id: string, debited: boolean) => Promise<void>;
+  onDeleteTransaction: (id: string) => Promise<void>;
   categories: string[];
 }
 
@@ -34,7 +36,7 @@ const ORDERED_MONTH_NAMES = [
   'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
 ];
 
-export default function InvoiceExplorer({ transactions, onUpdateCategory, onUpdateDebited, categories }: InvoiceExplorerProps) {
+export default function InvoiceExplorer({ transactions, onUpdateCategory, onUpdateDebited, onDeleteTransaction, categories }: InvoiceExplorerProps) {
   // Extract all unique month-years in chronological/reverse order
   const monthYears = useMemo(() => {
     const list: { month: string; year: number; key: string }[] = [];
@@ -60,6 +62,7 @@ export default function InvoiceExplorer({ transactions, onUpdateCategory, onUpda
   const [selectedCategory, setSelectedCategory] = useState<string>('Todos');
   const [onlyMom, setOnlyMom] = useState<boolean>(false);
   const [activeFolder, setActiveFolder] = useState<'Inter' | 'Nubank'>('Inter');
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   // Fallback to first available key if current selected doesn't exist anymore or is empty
   const activeMonthKey = useMemo(() => {
@@ -378,7 +381,7 @@ export default function InvoiceExplorer({ transactions, onUpdateCategory, onUpda
                       </div>
                     </div>
 
-                    {/* Right block: Value & Category Dropdown */}
+                    {/* Right block: Value & Category Dropdown & Delete Button */}
                     <div className="flex items-center justify-between sm:justify-end gap-4 border-t border-zinc-100/50 pt-2.5 sm:border-0 sm:pt-0">
                       
                       {/* Categorization dynamic select */}
@@ -403,6 +406,38 @@ export default function InvoiceExplorer({ transactions, onUpdateCategory, onUpda
                           R$ {tx.value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                         </span>
                       </div>
+
+                      {/* Excluir / Delete Button */}
+                      {confirmDeleteId === tx.id ? (
+                        <div className="flex items-center gap-1 bg-red-50 border border-red-100 p-0.5 rounded-lg shrink-0">
+                          <button
+                            type="button"
+                            onClick={async () => {
+                              await onDeleteTransaction(tx.id);
+                              setConfirmDeleteId(null);
+                            }}
+                            className="px-2 py-1 bg-red-600 text-white rounded-md text-[10px] font-bold hover:bg-red-700 transition-all cursor-pointer shadow-sm"
+                          >
+                            Excluir?
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setConfirmDeleteId(null)}
+                            className="px-2 py-1 bg-zinc-200 text-zinc-600 hover:bg-zinc-300 rounded-md text-[10px] font-medium transition-all cursor-pointer"
+                          >
+                            Não
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => setConfirmDeleteId(tx.id)}
+                          className="p-1.5 rounded-lg border border-zinc-200 text-zinc-400 hover:text-red-600 hover:bg-rose-50/50 hover:border-red-200 transition-all focus:outline-none cursor-pointer shrink-0"
+                          title="Excluir lançamento"
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      )}
 
                     </div>
 
