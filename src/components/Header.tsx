@@ -14,18 +14,19 @@ import {
   RefreshCw,
   TrendingUp,
   Percent,
-  CloudLightning
+  CloudLightning,
+  LogOut
 } from 'lucide-react';
 
 interface HeaderProps {
   currentTab: string;
   onSelectTab: (tab: string) => void;
-  onResetData: () => Promise<void>;
-  resetLoading: boolean;
   totalSpent: number;
+  userSessionInfo?: string;
+  onLogout?: () => void;
 }
 
-export default function Header({ currentTab, onSelectTab, onResetData, resetLoading, totalSpent }: HeaderProps) {
+export default function Header({ currentTab, onSelectTab, totalSpent, userSessionInfo, onLogout }: HeaderProps) {
   
   const tabs = [
     { id: 'overview', name: 'Visão Geral', icon: <LayoutDashboard size={16} /> },
@@ -55,6 +56,14 @@ export default function Header({ currentTab, onSelectTab, onResetData, resetLoad
 
           {/* Quick Actions at header level */}
           <div className="flex items-center gap-3 flex-wrap">
+
+            {/* User Session Token Tag */}
+            {userSessionInfo && (
+              <div className="flex items-center gap-1.5 bg-zinc-50 border border-zinc-150 py-1.5 px-3 rounded-xl text-[10px] font-semibold text-zinc-600">
+                <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
+                <span className="truncate max-w-[120px] font-mono" title={userSessionInfo}>{userSessionInfo}</span>
+              </div>
+            )}
             
             {/* Quick spent metrics visual indicator */}
             <div className="hidden sm:flex items-center gap-2 bg-zinc-50 border border-zinc-100 py-1.5 px-3 rounded-xl">
@@ -62,16 +71,17 @@ export default function Header({ currentTab, onSelectTab, onResetData, resetLoad
               <span className="text-xs font-bold text-zinc-800">R$ {totalSpent.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
             </div>
 
-            {/* Reset memory cache button */}
-            <button
-              onClick={onResetData}
-              disabled={resetLoading}
-              className="py-1.5 px-3 border border-zinc-150 rounded-xl text-xs font-semibold text-zinc-650 hover:bg-zinc-100 active:bg-zinc-200 transition-all flex items-center gap-1.5 focus:outline-none cursor-pointer"
-              title="Restaurar base de dados inicial do CSV"
-            >
-              <RotateCcw size={13} className={resetLoading ? 'animate-spin' : ''} />
-              {resetLoading ? 'Restaurando...' : 'Zerar Lançamentos'}
-            </button>
+            {/* Logout Action Button */}
+            {onLogout && (
+              <button
+                onClick={onLogout}
+                className="py-1.5 px-3 border border-zinc-200 rounded-xl text-[10px] font-extrabold text-zinc-650 hover:text-red-600 hover:bg-rose-50/50 hover:border-red-200 transition-all flex items-center gap-1 focus:outline-none cursor-pointer"
+                title="Sair e Bloquear Carteira"
+              >
+                <LogOut size={11} />
+                Sair
+              </button>
+            )}
 
           </div>
 

@@ -14,7 +14,8 @@ import { FinancialData, ChatMessage, BankAccount } from './types';
 import { Loader2, Bot, AlertTriangle } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { RAW_CSV_DATA } from './data/raw_data';
-import { isSupabaseConfigured, loadFromSupabase, saveToSupabase } from './supabase';
+import { isSupabaseConfigured, loadFromSupabase, saveToSupabase, getCurrentUser, supabaseSignOut } from './supabase';
+import Login from './components/Login';
 
 export default function App() {
   const [currentTab, setCurrentTab] = useState<string>('overview');
@@ -22,6 +23,48 @@ export default function App() {
   const [loading, setLoading] = useState<boolean>(true);
   const [resetLoading, setResetLoading] = useState<boolean>(false);
   const [errorMsg, setErrorMsg] = useState<string>('');
+
+  // Authentication & Session States
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
+    return sessionStorage.getItem('fp_authenticated') === 'true';
+  });
+  const [activeUser, setActiveUser] = useState<any>(() => {
+    const saved = sessionStorage.getItem('fp_active_user');
+    return saved ? JSON.parse(saved) : null;
+  });
+  const [authType, setAuthType] = useState<'supabase' | 'local' | null>(() => {
+    return sessionStorage.getItem('fp_auth_type') as any || null;
+  });
+
+  const handleLoginSuccess = async (user: any, type: 'supabase' | 'local') => {
+    setActiveUser(user);
+    setAuthType(type);
+    setIsAuthenticated(true);
+    sessionStorage.setItem('fp_authenticated', 'true');
+    sessionStorage.setItem('fp_active_user', JSON.stringify(user));
+    sessionStorage.setItem('fp_auth_type', type);
+    
+    setLoading(true);
+    await fetchFinancialData();
+  };
+
+  const handleLogout = async () => {
+    if (authType === 'supabase') {
+      try {
+        await supabaseSignOut();
+      } catch (e) {
+        console.warn("Error signing out from Supabase:", e);
+      }
+    }
+    
+    setActiveUser(null);
+    setAuthType(null);
+    setIsAuthenticated(false);
+    sessionStorage.removeItem('fp_authenticated');
+    sessionStorage.removeItem('fp_active_user');
+    sessionStorage.removeItem('fp_auth_type');
+    setFinancialData(null);
+  };
 
   // Helper to replicate server-side summary recalculation on the offline client
   const recalculateLocalSummary = (data: FinancialData) => {
@@ -115,22 +158,27 @@ Como estou rodando em **modo offline resiliente** para garantir que você não p
     try {
       // 1. Try loading from Supabase first if configured
       if (isSupabaseConfigured) {
-        const supabaseData = await loadFromSupabase();
-        if (supabaseData) {
-          setFinancialData(supabaseData);
-          localStorage.setItem('user_financial_data', JSON.stringify(supabaseData));
-          
-          try {
-            await fetch('/api/sync/restore', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ data: supabaseData, force: true }),
-            });
-          } catch (e) {
-            console.warn("Backend rest sync skipped: running in serverless environment.");
+        try {
+          const supabaseData = await loadFromSupabase();
+          if (supabaseData) {
+            setFinancialData(supabaseData);
+            localStorage.setItem('user_financial_data', JSON.stringify(supabaseData));
+            
+            try {
+              await fetch('/api/sync/restore', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ data: supabaseData, force: true }),
+              });
+            } catch (e) {
+              console.warn("Backend rest sync skipped: running in serverless environment.");
+            }
+            setLoading(false);
+            return;
           }
-          setLoading(false);
-          return;
+        } catch (supaErr: any) {
+          console.warn("Erro ao ler do Supabase na inicialização, usando backup local:", supaErr.message || supaErr);
+          // O erro não interrompe o carregamento dos dados locais offline
         }
       }
 
@@ -230,7 +278,24 @@ Como estou rodando em **modo offline resiliente** para garantir que você não p
   };
 
   useEffect(() => {
-    fetchFinancialData();
+    const checkSession = async () => {
+      try {
+        const user = await getCurrentUser();
+        if (user) {
+          setActiveUser(user);
+          setAuthType('supabase');
+          setIsAuthenticated(true);
+          sessionStorage.setItem('fp_authenticated', 'true');
+          sessionStorage.setItem('fp_active_user', JSON.stringify(user));
+          sessionStorage.setItem('fp_auth_type', 'supabase');
+        }
+      } catch (e) {
+        console.warn("Silent session restore error:", e);
+      } finally {
+        fetchFinancialData();
+      }
+    };
+    checkSession();
   }, []);
 
   // Sync manual spending inputs to Backend Cache
@@ -509,14 +574,23 @@ Como estou rodando em **modo offline resiliente** para garantir que você não p
     );
   }
 
+  if (!isAuthenticated) {
+    return <Login onLoginSuccess={handleLoginSuccess} />;
+  }
+
+  // Active user session descriptor for header tag display
+  const userSessionInfo = activeUser 
+    ? (authType === 'supabase' ? activeUser.email : 'Acesso Local Protegido')
+    : undefined;
+
   return (
     <div className="min-h-screen bg-[#fafafa] flex flex-col">
       <Header
         currentTab={currentTab}
         onSelectTab={setCurrentTab}
-        onResetData={handleResetData}
-        resetLoading={resetLoading}
         totalSpent={totalSpent}
+        userSessionInfo={userSessionInfo}
+        onLogout={handleLogout}
       />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -595,6 +669,8 @@ Como estou rodando em **modo offline resiliente** para garantir que você não p
               <GithubSync 
                 financialData={financialData}
                 onRestoreData={(newData) => setFinancialData(newData)}
+                onResetData={handleResetData}
+                resetLoading={resetLoading}
               />
             </motion.div>
           )}

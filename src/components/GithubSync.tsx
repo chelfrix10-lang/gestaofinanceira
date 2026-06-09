@@ -36,9 +36,11 @@ import {
 interface GithubSyncProps {
   financialData: FinancialData;
   onRestoreData: (restoredData: FinancialData) => void;
+  onResetData: () => Promise<void>;
+  resetLoading: boolean;
 }
 
-export default function GithubSync({ financialData, onRestoreData }: GithubSyncProps) {
+export default function GithubSync({ financialData, onRestoreData, onResetData, resetLoading }: GithubSyncProps) {
   // Supabase Custom State
   const [customSupabaseUrl, setCustomSupabaseUrl] = useState<string>(() => localStorage.getItem('fp_custom_supabase_url') || '');
   const [customSupabaseKey, setCustomSupabaseKey] = useState<string>(() => localStorage.getItem('fp_custom_supabase_key') || '');
@@ -54,6 +56,7 @@ export default function GithubSync({ financialData, onRestoreData }: GithubSyncP
   const [successMsg, setSuccessMsg] = useState<string>('');
   const [errorMsg, setErrorMsg] = useState<string>('');
   const [copiedGistId, setCopiedGistId] = useState<boolean>(false);
+  const [confirmReset, setConfirmReset] = useState<boolean>(false);
 
   // Handle saving Supabase custom connection locally
   const handleSaveSupabase = () => {
@@ -100,15 +103,27 @@ export default function GithubSync({ financialData, onRestoreData }: GithubSyncP
         setSuccessMsg('Sincronização concluída! Dados carregados e aplicados com sucesso deste dispositivo.');
       } else {
         // 2. If empty remote DB, backup local state to initialize it
-        const ok = await saveToSupabase(financialData);
-        if (ok) {
+        const res = await saveToSupabase(financialData);
+        if (res.success) {
           setSuccessMsg('Dados locais exportados para o Supabase com sucesso para iniciar seu banco em nuvem!');
         } else {
-          setErrorMsg('Sem tabelas de dados no Supabase. Execute o comando SQL no painel de controle do Supabase.');
+          if (res.code === '42P01' || (res.error && res.error.includes('financial_data') && res.error.includes('exist'))) {
+            setErrorMsg('A tabela "financial_data" não existe no Supabase. Por favor, execute o comando SQL de criação abaixo.');
+          } else if (res.code === '42501' || (res.error && (res.error.includes('row-level security') || res.error.includes('policy')))) {
+            setErrorMsg('O Row Level Security (RLS) impediu a gravação de dados. Execute: ALTER TABLE financial_data DISABLE ROW LEVEL SECURITY; no seu SQL Editor do Supabase.');
+          } else {
+            setErrorMsg(`Não foi possível inicializar a tabela: ${res.error || 'Erro desconhecido'}`);
+          }
         }
       }
     } catch (e: any) {
-      setErrorMsg('Falha na sincronização: ' + e.message);
+      if (e.code === '42P01' || (e.message && e.message.includes('financial_data') && e.message.includes('exist'))) {
+        setErrorMsg('A tabela "financial_data" não existe no Supabase. Execute o comando de criação SQL abaixo antes de sincronizar.');
+      } else if (e.code === '42501' || (e.message && (e.message.includes('row-level security') || e.message.includes('policy')))) {
+        setErrorMsg('Erro de permissão RLS: execute o comando "ALTER TABLE financial_data DISABLE ROW LEVEL SECURITY;" no seu SQL Editor do Supabase.');
+      } else {
+        setErrorMsg('Falha na sincronização: ' + (e.message || e));
+      }
     } finally {
       setLoading(false);
     }
@@ -123,6 +138,18 @@ export default function GithubSync({ financialData, onRestoreData }: GithubSyncP
     initSupabaseClient();
     setIsCurrentlyConfigured(isSupabaseConfigured);
     setSuccessMsg('Integração Supabase removida. Os dados permanecem salvos localmente neste navegador.');
+  };
+
+  // Handle Zerar Lançamentos
+  const handleResetAction = async () => {
+    if (!confirmReset) return;
+    try {
+      await onResetData();
+      setConfirmReset(false);
+      setSuccessMsg('Base de dados restaurada para o estado original com sucesso!');
+    } catch (err: any) {
+      setErrorMsg('Erro ao restaurar banco de dados: ' + (err.message || err));
+    }
   };
 
   // Clear messages after 5 seconds
@@ -467,13 +494,78 @@ export default function GithubSync({ financialData, onRestoreData }: GithubSyncP
 {`create table financial_data (
   id text primary key,
   data jsonb not null
-);`}
+);
+
+-- Permite leitura e escrita sem bloqueio de políticas de RLS
+alter table financial_data disable row level security;`}
                     </pre>
                   </li>
                   <li>Entre em <strong>Project Settings</strong> &gt; <strong>API</strong>, copie a <strong>Project URL</strong> e a <strong>anon public API Key</strong> para os campos acima.</li>
                 </ol>
               </div>
 
+            </div>
+          </div>
+
+          {/* Zona de Risco / Danger Zone Card */}
+          <div className="bg-red-50/20 border border-red-150 p-6 rounded-2xl shadow-sm space-y-4">
+            <div className="flex items-center gap-2 border-b border-red-100 pb-3">
+              <AlertTriangle className="text-red-600" size={16} />
+              <h3 className="text-sm font-bold text-red-800 uppercase tracking-wide font-sans">Zona de Perigo</h3>
+            </div>
+            
+            <div className="space-y-3.5 text-xs text-zinc-650 leading-relaxed">
+              <p>
+                A função <strong>Zerar Lançamentos</strong> foi criada para permitir que você limpe todas as modificações manuais (novos gastos, faturas alteradas, contas salvas) e retorne o aplicativo ao estado inicial padrão mapeado das faturas originais em CSV.
+              </p>
+              
+              <div className="bg-red-50/50 border border-red-100 rounded-xl p-3 space-y-2">
+                <p className="font-semibold text-red-900 text-[11px] flex items-center gap-1">
+                  <AlertCircle size={13} className="text-red-600" />
+                  Atenção: Ação Irreversível!
+                </p>
+                <p className="text-[10px] text-red-800 leading-snug">
+                  Se você tiver configurado um Banco de Dados Cloud (Supabase), esta ação também substituirá os dados salvos na nuvem pelo estado padrão inicial do modelo.
+                </p>
+              </div>
+
+              {/* Confirmation switch/checkbox to avoid accidental clicks */}
+              <div className="flex items-start gap-2.5 pt-1.5">
+                <input
+                  id="confirm-reset-checkbox"
+                  type="checkbox"
+                  checked={confirmReset}
+                  onChange={(e) => setConfirmReset(e.target.checked)}
+                  className="mt-0.5 rounded border-zinc-350 text-red-600 focus:ring-red-500 cursor-pointer h-4 w-4"
+                />
+                <label htmlFor="confirm-reset-checkbox" className="text-[11px] text-zinc-600 select-none cursor-pointer leading-tight">
+                  Eu entendo que isso apagará todos os meus lançamentos personalizados e restaurará os dados padrão do CSV.
+                </label>
+              </div>
+
+              <div className="pt-1">
+                <button
+                  onClick={handleResetAction}
+                  disabled={!confirmReset || resetLoading}
+                  className={`w-full font-bold text-[11px] rounded-xl py-2.5 px-3 flex items-center justify-center gap-1.5 transition-all focus:outline-none ${
+                    confirmReset && !resetLoading
+                      ? 'bg-red-600 hover:bg-red-700 text-white cursor-pointer shadow-sm'
+                      : 'bg-zinc-100 text-zinc-400 cursor-not-allowed border border-zinc-150'
+                  }`}
+                >
+                  {resetLoading ? (
+                    <>
+                      <RefreshCw size={12} className="animate-spin" />
+                      Restaurando Base de Dados...
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 size={12} />
+                      Zerar Lançamentos e Restaurar CSV
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
 
