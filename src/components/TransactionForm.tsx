@@ -188,10 +188,10 @@ export default function TransactionForm({ onAddTransaction, categories }: Transa
       </div>
 
       {/* Main input form (Columns 7) */}
-      <div className="md:col-span-7 bg-white border border-zinc-100 rounded-2xl p-6 shadow-sm">
+      <div className="md:col-span-7 bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-2xl p-6 shadow-sm">
         <form onSubmit={handleSubmit} className="space-y-4">
           
-          <h3 className="font-semibold text-zinc-900 text-lg border-b border-zinc-50 pb-3">Detalhes do Gasto</h3>
+          <h3 className="font-semibold text-zinc-900 dark:text-zinc-50 text-lg border-b border-zinc-50 dark:border-zinc-850 pb-3">Detalhes do Gasto</h3>
 
           <AnimatePresence>
             {success && (
@@ -199,9 +199,9 @@ export default function TransactionForm({ onAddTransaction, categories }: Transa
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
-                className="bg-emerald-50 border border-emerald-100 text-emerald-800 text-xs p-3.5 rounded-xl flex items-center gap-2"
+                className="bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/40 text-emerald-800 dark:text-emerald-300 text-xs p-3.5 rounded-xl flex items-center gap-2"
               >
-                <CheckCircle size={16} className="text-emerald-600 shrink-0" />
+                <CheckCircle size={16} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
                 <span>Gasto registrado com sucesso! Atualizamos seus painéis e gráficos.</span>
               </motion.div>
             )}
@@ -210,9 +210,9 @@ export default function TransactionForm({ onAddTransaction, categories }: Transa
               <motion.div 
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-rose-50 border border-rose-100 text-rose-800 text-xs p-3.5 rounded-xl flex items-center gap-2"
+                className="bg-rose-50 dark:bg-rose-950/20 border border-rose-100 dark:border-rose-900/40 text-rose-800 dark:text-rose-300 text-xs p-3.5 rounded-xl flex items-center gap-2"
               >
-                <AlertCircle size={16} className="text-rose-600 shrink-0" />
+                <AlertCircle size={16} className="text-rose-600 dark:text-rose-450 shrink-0" />
                 <span>{errorMsg}</span>
               </motion.div>
             )}
@@ -221,9 +221,9 @@ export default function TransactionForm({ onAddTransaction, categories }: Transa
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Local */}
             <div className="space-y-1">
-              <label className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider block">Local / Estabelecimento</label>
+              <label className="text-[10px] text-zinc-400 dark:text-zinc-500 font-bold uppercase tracking-wider block">Local / Estabelecimento</label>
               <div className="relative">
-                <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-zinc-400">
+                <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-zinc-400 select-none">
                   <FileSpreadsheet size={14} />
                 </span>
                 <input
@@ -231,7 +231,7 @@ export default function TransactionForm({ onAddTransaction, categories }: Transa
                   value={local}
                   onChange={(e) => setLocal(e.target.value)}
                   placeholder="Ex: iFood, Farmácia Pague Menos"
-                  className="w-full pl-9 pr-3 py-2 bg-zinc-50 border border-zinc-100 rounded-xl focus:outline-none focus:ring-1 focus:ring-zinc-900 text-xs text-zinc-750"
+                  className="w-full pl-9 pr-3 py-2 bg-zinc-50 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-700 rounded-xl focus:outline-none focus:ring-1 focus:ring-zinc-900 dark:focus:ring-zinc-600 text-xs text-zinc-700 dark:text-zinc-200 placeholder-zinc-400 dark:placeholder-zinc-500"
                   required
                 />
               </div>
@@ -239,9 +239,9 @@ export default function TransactionForm({ onAddTransaction, categories }: Transa
 
             {/* Value */}
             <div className="space-y-1">
-              <label className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider block">Valor (R$)</label>
+              <label className="text-[10px] text-zinc-400 dark:text-zinc-500 font-bold uppercase tracking-wider block">Valor (R$)</label>
               <div className="relative">
-                <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-zinc-400">
+                <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-zinc-400 select-none">
                   <DollarSign size={14} />
                 </span>
                 <input
@@ -249,7 +249,7 @@ export default function TransactionForm({ onAddTransaction, categories }: Transa
                   value={value}
                   onChange={(e) => setValue(e.target.value)}
                   placeholder="Ex: 85,90"
-                  className="w-full pl-9 pr-3 py-2 bg-zinc-50 border border-zinc-100 rounded-xl focus:outline-none focus:ring-1 focus:ring-zinc-900 text-xs text-zinc-750"
+                  className="w-full pl-9 pr-3 py-2 bg-zinc-50 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-700 rounded-xl focus:outline-none focus:ring-1 focus:ring-zinc-900 dark:focus:ring-zinc-600 text-xs text-zinc-700 dark:text-zinc-200 placeholder-zinc-400 dark:placeholder-zinc-500"
                   required
                 />
               </div>
@@ -257,34 +257,34 @@ export default function TransactionForm({ onAddTransaction, categories }: Transa
 
             {/* Date */}
             <div className="space-y-1">
-              <label className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider block">Data da Compra</label>
+              <label className="text-[10px] text-zinc-400 dark:text-zinc-500 font-bold uppercase tracking-wider block">Data da Compra</label>
               <div className="relative">
-                <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-zinc-400">
+                <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-zinc-400 select-none">
                   <Calendar size={14} />
                 </span>
                 <input
                   type="date"
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 bg-zinc-50 border border-zinc-100 rounded-xl focus:outline-none focus:ring-1 focus:ring-zinc-900 text-xs text-zinc-720 cursor-pointer pointer-events-auto"
+                  className="w-full pl-9 pr-3 py-2 bg-zinc-50 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-700 rounded-xl focus:outline-none focus:ring-1 focus:ring-zinc-900 dark:focus:ring-zinc-600 text-xs text-zinc-700 dark:text-zinc-200 cursor-pointer pointer-events-auto"
                 />
               </div>
             </div>
 
             {/* Category */}
             <div className="space-y-1">
-              <label className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider block">Categoria</label>
+              <label className="text-[10px] text-zinc-400 dark:text-zinc-500 font-bold uppercase tracking-wider block">Categoria</label>
               <div className="relative">
-                <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-zinc-400">
+                <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-zinc-400 select-none">
                   <Tag size={14} />
                 </span>
                 <select
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 bg-zinc-50 border border-zinc-100 rounded-xl focus:outline-none text-xs text-zinc-720 cursor-pointer pointer-events-auto"
+                  className="w-full pl-9 pr-3 py-2 bg-zinc-50 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-700 rounded-xl focus:outline-none text-xs text-zinc-700 dark:text-zinc-200 cursor-pointer pointer-events-auto"
                 >
                   {categories.map((c) => (
-                    <option key={c} value={c}>
+                    <option key={c} value={c} className="bg-white dark:bg-zinc-900">
                       {c}
                     </option>
                   ))}
@@ -294,50 +294,50 @@ export default function TransactionForm({ onAddTransaction, categories }: Transa
 
             {/* Card selector */}
             <div className="space-y-1">
-              <label className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider block">Cartão de Crédito</label>
+              <label className="text-[10px] text-zinc-400 dark:text-zinc-500 font-bold uppercase tracking-wider block">Cartão de Crédito</label>
               <div className="relative">
-                <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-zinc-400">
+                <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-zinc-400 select-none">
                   <CreditCard size={14} />
                 </span>
                 <select
                   value={card}
                   onChange={(e) => setCard(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 bg-zinc-50 border border-zinc-100 rounded-xl focus:outline-none text-xs text-zinc-720 cursor-pointer pointer-events-auto"
+                  className="w-full pl-9 pr-3 py-2 bg-zinc-50 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-700 rounded-xl focus:outline-none text-xs text-zinc-700 dark:text-zinc-200 cursor-pointer pointer-events-auto"
                 >
-                  <option value="Nubank">Nubank (Roxo)</option>
-                  <option value="Inter">Inter (Laranja)</option>
-                  <option value="Neon">Neon (Azul)</option>
+                  <option value="Nubank" className="bg-white dark:bg-zinc-900">Nubank (Roxo)</option>
+                  <option value="Inter" className="bg-white dark:bg-zinc-900">Inter (Laranja)</option>
+                  <option value="Neon" className="bg-white dark:bg-zinc-900">Neon (Azul)</option>
                 </select>
               </div>
             </div>
 
             {/* Payment Forma */}
             <div className="space-y-1">
-              <label className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider block">Forma / Parcelas</label>
+              <label className="text-[10px] text-zinc-400 dark:text-zinc-500 font-bold uppercase tracking-wider block">Forma / Parcelas</label>
               <select
                 value={form}
                 onChange={(e) => setForm(e.target.value)}
-                className="w-full px-3 py-2 bg-zinc-50 border border-zinc-100 rounded-xl focus:outline-none text-xs text-zinc-720 cursor-pointer pointer-events-auto"
+                className="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-700 rounded-xl focus:outline-none text-xs text-zinc-700 dark:text-zinc-200 cursor-pointer pointer-events-auto"
               >
-                <option value="À Vista">À Vista</option>
-                <option value="Em 2 vezes">Em 2 vezes</option>
-                <option value="Em 3 vezes">Em 3 vezes</option>
-                <option value="Em 4 vezes">Em 4 vezes</option>
-                <option value="Em 5 vezes">Em 5 vezes</option>
-                <option value="Em 6 vezes">Em 6 vezes</option>
+                <option value="À Vista" className="bg-white dark:bg-zinc-900">À Vista</option>
+                <option value="Em 2 vezes" className="bg-white dark:bg-zinc-900">Em 2 vezes</option>
+                <option value="Em 3 vezes" className="bg-white dark:bg-zinc-900">Em 3 vezes</option>
+                <option value="Em 4 vezes" className="bg-white dark:bg-zinc-900">Em 4 vezes</option>
+                <option value="Em 5 vezes" className="bg-white dark:bg-zinc-900">Em 5 vezes</option>
+                <option value="Em 6 vezes" className="bg-white dark:bg-zinc-900">Em 6 vezes</option>
               </select>
             </div>
 
             {/* Month selector for billing statement */}
             <div className="space-y-1">
-              <label className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider block">Mês da Fatura de Lançamento</label>
+              <label className="text-[10px] text-zinc-400 dark:text-zinc-500 font-bold uppercase tracking-wider block">Mês da Fatura de Lançamento</label>
               <select
                 value={month}
                 onChange={(e) => setMonth(e.target.value)}
-                className="w-full px-3 py-2 bg-zinc-50 border border-zinc-100 rounded-xl focus:outline-none text-xs text-zinc-720 cursor-pointer pointer-events-auto"
+                className="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-700 rounded-xl focus:outline-none text-xs text-zinc-700 dark:text-zinc-200 cursor-pointer pointer-events-auto"
               >
                 {PORTUGUESE_MONTHS.map((m) => (
-                  <option key={m} value={m}>
+                  <option key={m} value={m} className="bg-white dark:bg-zinc-900">
                     {m}
                   </option>
                 ))}
@@ -346,23 +346,23 @@ export default function TransactionForm({ onAddTransaction, categories }: Transa
 
             {/* Year selector for billing */}
             <div className="space-y-1">
-              <label className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider block">Ano de Cobrança</label>
+              <label className="text-[10px] text-zinc-400 dark:text-zinc-500 font-bold uppercase tracking-wider block">Ano de Cobrança</label>
               <select
                 value={year}
                 onChange={(e) => setYear(e.target.value)}
-                className="w-full px-3 py-2 bg-zinc-50 border border-zinc-100 rounded-xl focus:outline-none text-xs text-zinc-720 cursor-pointer pointer-events-auto"
+                className="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-700 rounded-xl focus:outline-none text-xs text-zinc-700 dark:text-zinc-200 cursor-pointer pointer-events-auto"
               >
-                <option value="2026">2026</option>
-                <option value="2025">2025</option>
-                <option value="2024">2024</option>
+                <option value="2026" className="bg-white dark:bg-zinc-900">2026</option>
+                <option value="2025" className="bg-white dark:bg-zinc-900">2025</option>
+                <option value="2024" className="bg-white dark:bg-zinc-900">2024</option>
               </select>
             </div>
 
             {/* Debitar da Conta Toggle option */}
-            <div className="sm:col-span-2 flex items-center justify-between p-3.5 bg-zinc-50 border border-zinc-100/80 rounded-xl mt-2">
+            <div className="sm:col-span-2 flex items-center justify-between p-3.5 bg-zinc-50 dark:bg-zinc-950/40 border border-zinc-100/80 dark:border-zinc-800 rounded-xl mt-2">
               <div className="space-y-0.5">
-                <span className="text-xs font-bold text-zinc-800 block">Debitar imediatamente do patrimônio?</span>
-                <span className="text-[10px] text-zinc-400 block max-w-sm">
+                <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200 block">Debitar imediatamente do patrimônio?</span>
+                <span className="text-[10px] text-zinc-400 dark:text-zinc-500 block max-w-sm">
                   Se ativado, desconta o valor do seu patrimônio bruto. Se desativado, não altera seu saldo bruto nem o líquido até que você debite manualmente no histórico.
                 </span>
               </div>
@@ -370,11 +370,11 @@ export default function TransactionForm({ onAddTransaction, categories }: Transa
                 type="button"
                 onClick={() => setDebited(!debited)}
                 className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                  debited ? 'bg-emerald-600' : 'bg-zinc-200'
+                  debited ? 'bg-emerald-600' : 'bg-zinc-200 dark:bg-zinc-800'
                 }`}
               >
                 <span
-                  className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ease-in-out ${
+                  className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white dark:bg-zinc-100 shadow-sm ring-0 transition duration-200 ease-in-out ${
                     debited ? 'translate-x-5' : 'translate-x-0'
                   }`}
                 />
@@ -387,7 +387,7 @@ export default function TransactionForm({ onAddTransaction, categories }: Transa
             type="submit"
             disabled={loading}
             className={`w-full mt-6 py-3 font-semibold rounded-xl text-xs flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all text-white ${
-              loading ? 'bg-zinc-700 cursor-not-allowed' : 'bg-zinc-950 hover:bg-zinc-900'
+              loading ? 'bg-zinc-700 cursor-not-allowed' : 'bg-zinc-950 dark:bg-zinc-100 hover:bg-zinc-900 dark:hover:bg-zinc-200 dark:text-zinc-950'
             }`}
           >
             {loading ? 'Salvando no Banco...' : 'Adicionar Transação'}

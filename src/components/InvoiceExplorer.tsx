@@ -129,7 +129,7 @@ export default function InvoiceExplorer({ transactions, onUpdateCategory, onUpda
     <div id="explorer-view" className="space-y-6">
       
       {/* Month Selector Horizontal Slider bar */}
-      <div id="month-slider-panel" className="bg-white border border-zinc-100 rounded-2xl p-4 shadow-sm">
+      <div id="month-slider-panel" className="bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-2xl p-4 shadow-sm">
         <label className="text-xs text-zinc-400 font-semibold uppercase tracking-wider block mb-3 flex items-center gap-1">
           <SlidersHorizontal size={14} /> Selecione o Mês de Referência
         </label>
@@ -144,10 +144,10 @@ export default function InvoiceExplorer({ transactions, onUpdateCategory, onUpda
                   setSearchTerm('');
                   setSelectedCategory('Todos');
                 }}
-                className={`snap-center shrink-0 py-2 px-4 rounded-xl text-sm font-medium transition-all ${
+                className={`snap-center shrink-0 py-2 px-4 rounded-xl text-sm font-medium transition-all cursor-pointer ${
                   isActive 
-                    ? 'bg-zinc-900 text-white shadow-md' 
-                    : 'bg-zinc-50 hover:bg-zinc-100 text-zinc-600 border border-zinc-100'
+                    ? 'bg-zinc-900 dark:bg-zinc-100 dark:text-zinc-950 text-white shadow-md' 
+                    : 'bg-zinc-50 dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-750 text-zinc-600 dark:text-zinc-300 border border-zinc-100 dark:border-zinc-800'
                 }`}
               >
                 {my.month} {my.year}
@@ -164,52 +164,52 @@ export default function InvoiceExplorer({ transactions, onUpdateCategory, onUpda
         <div className="lg:col-span-4 space-y-6">
           
           {/* Quick Month Statements Board */}
-          <div id="month-summary-capsule" className="bg-white border border-zinc-100 rounded-2xl p-5 shadow-sm space-y-4">
+          <div id="month-summary-capsule" className="bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-2xl p-5 shadow-sm space-y-4">
             <div>
-              <span className="text-zinc-600 text-xs font-semibold uppercase tracking-wider block mb-1">Fatura Total do Mês</span>
-              <h2 className="text-2xl font-bold text-zinc-900">
+              <span className="text-zinc-600 dark:text-zinc-400 text-xs font-semibold uppercase tracking-wider block mb-1">Fatura Total do Mês</span>
+              <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
                 R$ {monthlyStats.totalBill.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
               </h2>
               <p className="text-[10px] text-zinc-400 mt-0.5">Soma acumulada de todos os cartões ativos no ciclo</p>
             </div>
 
-            <div className="border-t border-zinc-50 pt-3 space-y-2.5">
+            <div className="border-t border-zinc-50 dark:border-zinc-800 pt-3 space-y-2.5">
               {monthlyStats.nubankTotal > 0 && (
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-zinc-500 font-medium flex items-center gap-1.5">
+                  <span className="text-zinc-500 dark:text-zinc-400 font-medium flex items-center gap-1.5">
                     <span className="w-2.5 h-2.5 rounded-full bg-purple-600" /> Nubank
                   </span>
-                  <span className="font-semibold text-zinc-800">
+                  <span className="font-semibold text-zinc-800 dark:text-zinc-200">
                     R$ {monthlyStats.nubankTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                   </span>
                 </div>
               )}
               {monthlyStats.interTotal > 0 && (
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-zinc-500 font-medium flex items-center gap-1.5">
+                  <span className="text-zinc-500 dark:text-zinc-400 font-medium flex items-center gap-1.5">
                     <span className="w-2.5 h-2.5 rounded-full bg-amber-500" /> Inter
                   </span>
-                  <span className="font-semibold text-zinc-800">
+                  <span className="font-semibold text-zinc-800 dark:text-zinc-200">
                     R$ {monthlyStats.interTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                   </span>
                 </div>
               )}
               {monthlyStats.neonTotal > 0 && (
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-zinc-500 font-medium flex items-center gap-1.5">
+                  <span className="text-zinc-500 dark:text-zinc-400 font-medium flex items-center gap-1.5">
                     <span className="w-2.5 h-2.5 rounded-full bg-cyan-500" /> Neon
                   </span>
-                  <span className="font-semibold text-zinc-800">
+                  <span className="font-semibold text-zinc-800 dark:text-zinc-200">
                     R$ {monthlyStats.neonTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                   </span>
                 </div>
               )}
               {monthlyStats.momTotal > 0 && (
-                <div className="flex items-center justify-between text-xs bg-amber-50/50 p-2 border border-amber-100 rounded-lg">
-                  <span className="text-amber-700 font-medium flex items-center gap-1">
+                <div className="flex items-center justify-between text-xs bg-amber-50/50 dark:bg-amber-950/20 p-2 border border-amber-100 dark:border-amber-900/30 rounded-lg">
+                  <span className="text-amber-700 dark:text-amber-300 font-medium flex items-center gap-1">
                     🙋‍♀️ Reembolso Mãe
                   </span>
-                  <span className="font-bold text-amber-800">
+                  <span className="font-bold text-amber-800 dark:text-amber-300">
                     R$ {monthlyStats.momTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                   </span>
                 </div>
@@ -218,14 +218,14 @@ export default function InvoiceExplorer({ transactions, onUpdateCategory, onUpda
           </div>
 
           {/* Interactive Filters Panel */}
-          <div id="filters-cap" className="bg-white border border-zinc-100 rounded-2xl p-5 shadow-sm space-y-4">
-            <h4 className="font-semibold text-zinc-800 text-sm flex items-center gap-1.5">
+          <div id="filters-cap" className="bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-2xl p-5 shadow-sm space-y-4">
+            <h4 className="font-semibold text-zinc-800 dark:text-zinc-200 text-sm flex items-center gap-1.5">
               <Filter size={16} /> Filtros Rápidos
             </h4>
 
             {/* Keyword Search Input */}
             <div className="relative">
-              <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-zinc-400">
+              <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-zinc-400 select-none">
                 <Search size={16} />
               </span>
               <input
@@ -233,21 +233,21 @@ export default function InvoiceExplorer({ transactions, onUpdateCategory, onUpda
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Buscar comércio, forma..."
-                className="w-full pl-9 pr-4 py-2 bg-zinc-50 text-xs border border-zinc-100 rounded-xl focus:outline-none focus:ring-1 focus:ring-zinc-900 transition-all text-zinc-700 placeholder-zinc-400"
+                className="w-full pl-9 pr-4 py-2 bg-zinc-50 dark:bg-zinc-800 text-xs border border-zinc-100 dark:border-zinc-700 rounded-xl focus:outline-none focus:ring-1 focus:ring-zinc-900/40 dark:focus:ring-zinc-650 transition-all text-zinc-700 dark:text-zinc-200 placeholder-zinc-400 dark:placeholder-zinc-500"
               />
             </div>
 
             {/* Categories Select Dropdown */}
             <div className="space-y-1">
-              <label className="text-[10px] text-zinc-400 font-semibold uppercase tracking-wider block">Categoria</label>
+              <label className="text-[10px] text-zinc-400 dark:text-zinc-500 font-semibold uppercase tracking-wider block">Categoria</label>
               <select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="w-full bg-zinc-50 text-xs border border-zinc-100 rounded-xl p-2 focus:outline-none text-zinc-750 font-medium pointer-events-auto"
+                className="w-full bg-zinc-50 dark:bg-zinc-800 text-xs border border-zinc-100 dark:border-zinc-700 rounded-xl p-2 focus:outline-none text-zinc-700 dark:text-zinc-250 font-medium pointer-events-auto"
               >
-                <option value="Todos">Todas as Categorias</option>
+                <option value="Todos" className="bg-white dark:bg-zinc-900">Todas as Categorias</option>
                 {categories.map(c => (
-                  <option key={c} value={c}>{c}</option>
+                  <option key={c} value={c} className="bg-white dark:bg-zinc-900">{c}</option>
                 ))}
               </select>
             </div>
@@ -255,10 +255,10 @@ export default function InvoiceExplorer({ transactions, onUpdateCategory, onUpda
             {/* Reembolso / Mom Toggle Button */}
             <button
               onClick={() => setOnlyMom(!onlyMom)}
-              className={`w-full py-2 px-3 border rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-all ${
+              className={`w-full py-2 px-3 border rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer ${
                 onlyMom 
-                  ? 'bg-amber-100 border-amber-200 text-amber-800 shadow-sm' 
-                  : 'bg-zinc-50 border-zinc-100 text-zinc-650 hover:bg-zinc-100'
+                  ? 'bg-amber-100 dark:bg-amber-950/20 border-amber-200 dark:border-amber-900/30 text-amber-800 dark:text-amber-300 shadow-sm' 
+                  : 'bg-zinc-50 dark:bg-zinc-800 border-zinc-100 dark:border-zinc-700 text-zinc-650 dark:text-zinc-350 hover:bg-zinc-100 dark:hover:bg-zinc-750'
               }`}
             >
               🙋‍♀️ Apenas gastos da mãe (reembolsável)
@@ -270,26 +270,26 @@ export default function InvoiceExplorer({ transactions, onUpdateCategory, onUpda
         {/* Right Side: Interactive Table & list of Transactions (Col-span-8) */}
         <div className="lg:col-span-8 space-y-4">
           
-          <div className="bg-white border border-zinc-100 rounded-2xl shadow-sm overflow-hidden">
-            <div className="p-5 border-b border-zinc-50 flex items-center justify-between flex-wrap gap-2">
+          <div className="bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-2xl shadow-sm overflow-hidden">
+            <div className="p-5 border-b border-zinc-50 dark:border-zinc-800/60 flex items-center justify-between flex-wrap gap-2">
               <div>
-                <h3 className="font-semibold text-zinc-900 text-base">Transações Registradas</h3>
-                <p className="text-xs text-zinc-400">Listagem de débitos de {activeMonthKey || 'Nenhum mês ativo'}</p>
+                <h3 className="font-semibold text-zinc-900 dark:text-zinc-50 text-base">Transações Registradas</h3>
+                <p className="text-xs text-zinc-400 dark:text-zinc-400 font-sans">Listagem de débitos de {activeMonthKey || 'Nenhum mês ativo'}</p>
               </div>
-              <span className="text-xs text-zinc-500 font-medium">
+              <span className="text-xs text-zinc-500 dark:text-zinc-400 font-medium">
                 Mostrando <strong>{filteredTxs.length}</strong> compras
               </span>
             </div>
 
             {/* Pastas de Cartões (Folders for Inter & Nubank) */}
-            <div className="flex border-b border-zinc-100 bg-zinc-50/50 p-2.5 gap-2.5">
+            <div className="flex border-b border-zinc-100 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-950/20 p-2.5 gap-2.5">
               <button
                 type="button"
                 onClick={() => setActiveFolder('Inter')}
                 className={`flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-xl border transition-all cursor-pointer ${
                   activeFolder === 'Inter'
                     ? 'bg-amber-500 border-amber-600/20 text-white shadow-sm font-bold'
-                    : 'bg-white border-zinc-100 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-800'
+                    : 'bg-white dark:bg-zinc-800 border-zinc-105 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-700 hover:text-zinc-800 dark:hover:text-zinc-200'
                 }`}
               >
                 {activeFolder === 'Inter' ? <FolderOpen size={14} /> : <Folder size={14} />}
@@ -301,7 +301,7 @@ export default function InvoiceExplorer({ transactions, onUpdateCategory, onUpda
                 className={`flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-xl border transition-all cursor-pointer ${
                   activeFolder === 'Nubank'
                     ? 'bg-purple-600 border-purple-700/20 text-white shadow-sm font-bold'
-                    : 'bg-white border-zinc-100 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-800'
+                    : 'bg-white dark:bg-zinc-800 border-zinc-100 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-700 hover:text-zinc-800 dark:hover:text-zinc-200'
                 }`}
               >
                 {activeFolder === 'Nubank' ? <FolderOpen size={14} /> : <Folder size={14} />}
@@ -311,11 +311,11 @@ export default function InvoiceExplorer({ transactions, onUpdateCategory, onUpda
 
             {/* Data container */}
             {filteredTxs.length > 0 ? (
-              <div className="divide-y divide-zinc-50 max-h-[500px] overflow-y-auto">
+              <div className="divide-y divide-zinc-55 dark:divide-zinc-800/65 max-h-[500px] overflow-y-auto">
                 {filteredTxs.map((tx) => (
                   <div 
                     key={tx.id} 
-                    className="p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 hover:bg-zinc-50/50 transition-colors"
+                    className="p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 hover:bg-zinc-50/50 dark:hover:bg-zinc-800/30 transition-colors bg-white dark:bg-zinc-900"
                   >
                     
                     {/* Left block: Checkbox, Icon, Name and metadata */}
@@ -329,7 +329,7 @@ export default function InvoiceExplorer({ transactions, onUpdateCategory, onUpda
                           className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all cursor-pointer ${
                             tx.debited !== false
                               ? 'bg-emerald-600 border-emerald-600 text-white shadow-sm'
-                              : 'bg-zinc-50 border-zinc-300 text-transparent hover:border-zinc-400'
+                              : 'bg-zinc-50 dark:bg-zinc-800 border-zinc-300 dark:border-zinc-700 text-transparent hover:border-zinc-400 dark:hover:border-zinc-500'
                           }`}
                           title={tx.debited !== false ? "Marcar como não debitada" : "Marcar como debitada"}
                         >
@@ -340,60 +340,60 @@ export default function InvoiceExplorer({ transactions, onUpdateCategory, onUpda
                       </div>
 
                       <div className={`mt-0.5 rounded-xl p-2.5 shrink-0 ${
-                        tx.card === 'Nubank' ? 'bg-purple-50 text-purple-600' :
-                        tx.card === 'Inter' ? 'bg-amber-50 text-amber-600' :
-                        'bg-cyan-50 text-cyan-600'
+                        tx.card === 'Nubank' ? 'bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-350' :
+                        tx.card === 'Inter' ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-300' :
+                        'bg-cyan-50 dark:bg-cyan-950/40 text-cyan-600 dark:text-cyan-300'
                       }`}>
                         <div className="text-xs font-bold font-mono tracking-tight">{tx.card.substring(0, 2).toUpperCase()}</div>
                       </div>
  
                       <div className="space-y-1">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <span className="font-semibold text-zinc-800 text-sm leading-tight">{tx.local}</span>
+                          <span className="font-semibold text-zinc-800 dark:text-zinc-200 text-sm leading-tight">{tx.local}</span>
                           {tx.isMom && (
-                            <span className="bg-amber-100 text-amber-800 font-bold text-[9px] px-1.5 py-0.5 rounded-full flex items-center gap-0.5">
+                            <span className="bg-amber-100 dark:bg-amber-950/20 text-amber-800 dark:text-amber-300 font-bold text-[9px] px-1.5 py-0.5 rounded-full flex items-center gap-0.5">
                               Mãe
                             </span>
                           )}
                           {tx.id.startsWith('custom-') && (
-                            <span className="bg-zinc-900 text-white font-bold text-[9px] px-1.5 py-0.5 rounded-full">
+                            <span className="bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-950 font-bold text-[9px] px-1.5 py-0.5 rounded-full">
                               Lançamento
                             </span>
                           )}
                           {tx.debited !== false ? (
-                            <span className="bg-emerald-50 text-emerald-700 border border-emerald-100 font-semibold text-[9px] px-1.5 py-0.5 rounded-full">
+                            <span className="bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-300 border border-emerald-100 dark:border-emerald-900/30 font-semibold text-[9px] px-1.5 py-0.5 rounded-full">
                               Debitado
                             </span>
                           ) : (
-                            <span className="bg-zinc-100 text-zinc-500 border border-zinc-200 font-semibold text-[9px] px-1.5 py-0.5 rounded-full flex items-center gap-1">
+                            <span className="bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700 font-semibold text-[9px] px-1.5 py-0.5 rounded-full flex items-center gap-1">
                               <span className="w-1.5 h-1.5 rounded-full bg-zinc-400" /> Não Debitado
                             </span>
                           )}
                         </div>
  
-                        <div className="flex items-center gap-3 text-xs text-zinc-400 flex-wrap">
+                        <div className="flex items-center gap-3 text-xs text-zinc-400 dark:text-zinc-500 flex-wrap">
                           <span>{tx.date}</span>
                           <span>•</span>
                           <span>{tx.form}</span>
                           <span>•</span>
-                          <span className="text-zinc-600 font-medium bg-zinc-100 px-1.5 py-0.5 rounded text-[10px]">{tx.card}</span>
+                          <span className="text-zinc-650 dark:text-zinc-300 font-medium bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-[10px]">{tx.card}</span>
                         </div>
                       </div>
                     </div>
 
                     {/* Right block: Value & Category Dropdown & Delete Button */}
-                    <div className="flex items-center justify-between sm:justify-end gap-4 border-t border-zinc-100/50 pt-2.5 sm:border-0 sm:pt-0">
+                    <div className="flex items-center justify-between sm:justify-end gap-4 border-t border-zinc-104/50 dark:border-zinc-800/40 pt-2.5 sm:border-0 sm:pt-0">
                       
                       {/* Categorization dynamic select */}
                       <div className="flex items-center gap-1.5">
-                        <Tag size={12} className="text-zinc-400" />
+                        <Tag size={12} className="text-zinc-400 dark:text-zinc-550" />
                         <select
                           value={tx.category}
                           onChange={(e) => onUpdateCategory(tx.id, e.target.value)}
-                          className="bg-zinc-100 border border-transparent text-[10px] sm:text-xs font-medium text-zinc-600 hover:bg-zinc-200 transition-all rounded-lg p-1.5 focus:outline-none cursor-pointer"
+                          className="bg-zinc-100 dark:bg-zinc-800 border border-transparent dark:border-zinc-700 text-[10px] sm:text-xs font-medium text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-all rounded-lg p-1.5 focus:outline-none cursor-pointer"
                         >
                           {categories.map((c) => (
-                            <option key={c} value={c}>
+                            <option key={c} value={c} className="bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-100">
                               {c}
                             </option>
                           ))}
@@ -402,14 +402,14 @@ export default function InvoiceExplorer({ transactions, onUpdateCategory, onUpda
 
                       {/* Currency absolute numerical value */}
                       <div className="text-right shrink-0">
-                        <span className="text-base font-bold text-zinc-900 block">
+                        <span className="text-base font-bold text-zinc-900 dark:text-zinc-100 block">
                           R$ {tx.value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                         </span>
                       </div>
 
                       {/* Excluir / Delete Button */}
                       {confirmDeleteId === tx.id ? (
-                        <div className="flex items-center gap-1 bg-red-50 border border-red-100 p-0.5 rounded-lg shrink-0">
+                        <div className="flex items-center gap-1 bg-red-50 dark:bg-red-950/30 border border-red-105 dark:border-red-900/50 p-0.5 rounded-lg shrink-0">
                           <button
                             type="button"
                             onClick={async () => {
@@ -423,7 +423,7 @@ export default function InvoiceExplorer({ transactions, onUpdateCategory, onUpda
                           <button
                             type="button"
                             onClick={() => setConfirmDeleteId(null)}
-                            className="px-2 py-1 bg-zinc-200 text-zinc-600 hover:bg-zinc-300 rounded-md text-[10px] font-medium transition-all cursor-pointer"
+                            className="px-2 py-1 bg-zinc-200 dark:bg-zinc-850 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-300 dark:hover:bg-zinc-800 rounded-md text-[10px] font-medium transition-all cursor-pointer"
                           >
                             Não
                           </button>
@@ -432,7 +432,7 @@ export default function InvoiceExplorer({ transactions, onUpdateCategory, onUpda
                         <button
                           type="button"
                           onClick={() => setConfirmDeleteId(tx.id)}
-                          className="p-1.5 rounded-lg border border-zinc-200 text-zinc-400 hover:text-red-600 hover:bg-rose-50/50 hover:border-red-200 transition-all focus:outline-none cursor-pointer shrink-0"
+                          className="p-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700 text-zinc-400 dark:text-zinc-500 hover:text-red-600 hover:bg-rose-50/50 dark:hover:bg-rose-950/10 hover:border-red-200 dark:hover:border-red-905/30 transition-all focus:outline-none cursor-pointer shrink-0"
                           title="Excluir lançamento"
                         >
                           <Trash2 size={13} />

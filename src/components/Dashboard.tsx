@@ -219,19 +219,19 @@ export default function Dashboard({ transactions, bankAccounts, summary, onSelec
       return {
         title: 'Atenção aos limites',
         description: 'Seus gastos no histórico de faturas representam uma proporção alta do seu saldo em conta. Considere frear compras parceladas.',
-        color: 'border-rose-100 bg-rose-50/50 text-rose-800'
+        color: 'border-rose-100 dark:border-rose-900/30 bg-rose-50/50 dark:bg-rose-950/15 text-rose-800 dark:text-rose-300'
       };
     } else if (ratio > 0.2) {
       return {
         title: 'Orçamento equilibrado',
         description: 'Seu ritmo de despesas está saudável em relação às suas reservas totais. Continue acompanhando os vencimentos!',
-        color: 'border-blue-100 bg-blue-50/50 text-blue-800'
+        color: 'border-blue-100 dark:border-blue-900/30 bg-blue-50/50 dark:bg-blue-950/15 text-blue-800 dark:text-blue-300'
       };
     } else {
       return {
         title: 'Excelente saúde financeira',
         description: 'Suas economias cobrem confortavelmente suas faturas pendentes. Uma boa oportunidade para planejar pequenos investimentos.',
-        color: 'border-emerald-100 bg-emerald-50/50 text-emerald-800'
+        color: 'border-emerald-100 dark:border-emerald-900/30 bg-emerald-50/50 dark:bg-emerald-950/15 text-emerald-800 dark:text-emerald-300'
       };
     }
   }, [totalSpent, totalAccountBalance]);
@@ -243,11 +243,11 @@ export default function Dashboard({ transactions, bankAccounts, summary, onSelec
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
         
         {/* Net Worth Card */}
-        <div id="stat-card-liquido" className="relative overflow-hidden rounded-2xl bg-zinc-950 p-6 text-white shadow-xl flex flex-col justify-between h-[150px]">
+        <div id="stat-card-liquido" className="relative overflow-hidden rounded-2xl bg-zinc-950 dark:bg-zinc-900 border border-transparent dark:border-zinc-800 p-6 text-white shadow-xl flex flex-col justify-between h-[150px]">
           <div className="absolute right-0 top-0 -mr-6 -mt-6 h-28 w-28 rounded-full bg-gradient-to-tr from-emerald-500/10 to-emerald-400/20 blur-xl" />
           <div className="flex items-center justify-between">
             <span className="text-zinc-400 text-sm font-medium">Saldo Líquido Total</span>
-            <div className="rounded-full bg-zinc-900 p-2 text-emerald-400">
+            <div className="rounded-full bg-zinc-900 dark:bg-zinc-800 p-2 text-emerald-400">
               <Wallet size={20} />
             </div>
           </div>
@@ -262,36 +262,36 @@ export default function Dashboard({ transactions, bankAccounts, summary, onSelec
         </div>
 
         {/* Bruto Card */}
-        <div id="stat-card-bruto" className="relative overflow-hidden rounded-2xl border border-zinc-100 bg-white p-6 shadow-sm flex flex-col justify-between h-[150px]">
+        <div id="stat-card-bruto" className="relative overflow-hidden rounded-2xl border border-zinc-100 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 shadow-sm flex flex-col justify-between h-[150px]">
           <div className="flex items-center justify-between">
-            <span className="text-zinc-500 text-sm font-medium">Patrimônio Bruto</span>
-            <div className="rounded-full bg-zinc-50 p-2 text-zinc-700">
+            <span className="text-zinc-500 dark:text-zinc-400 text-sm font-medium">Patrimônio Bruto</span>
+            <div className="rounded-full bg-zinc-50 dark:bg-zinc-800 p-2 text-zinc-700 dark:text-zinc-350">
               <Coins size={20} />
             </div>
           </div>
           <div>
-            <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 mb-1">
+            <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100 mb-1">
               R$ {totalAccountBalance.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
             </h1>
-            <p className="text-xs text-zinc-500">
+            <p className="text-xs text-zinc-500 dark:text-zinc-400">
               Soma total de depósitos em contas e espécie
             </p>
           </div>
         </div>
 
         {/* Expenses Summary Card */}
-        <div id="stat-card-spent" className="relative overflow-hidden rounded-2xl border border-zinc-100 bg-white p-6 shadow-sm flex flex-col justify-between h-[150px]">
+        <div id="stat-card-spent" className="relative overflow-hidden rounded-2xl border border-zinc-100 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 shadow-sm flex flex-col justify-between h-[150px]">
           <div className="flex items-center justify-between">
-            <span className="text-zinc-500 text-sm font-medium">Histórico Total de Faturas</span>
-            <div className="rounded-full bg-zinc-50 p-2 text-rose-500">
+            <span className="text-zinc-500 dark:text-zinc-400 text-sm font-medium">Histórico Total de Faturas</span>
+            <div className="rounded-full bg-zinc-50 dark:bg-zinc-800 p-2 text-rose-500">
               <CreditCard size={20} />
             </div>
           </div>
           <div>
-            <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 mb-1">
+            <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100 mb-1">
               R$ {totalSpent.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
             </h1>
-            <p className="text-xs text-zinc-500 flex items-center gap-1 text-rose-600 font-medium">
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 flex items-center gap-1 text-rose-650 dark:text-rose-400 font-medium">
               <ArrowDownRight size={14} /> Total acumulado em {transactions.length} lançamentos
             </p>
           </div>
@@ -301,16 +301,16 @@ export default function Dashboard({ transactions, bankAccounts, summary, onSelec
 
       {/* Main Charts area */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-
+        
         {/* Category breakdown (Columns 7) */}
-        <div id="category-chart-box" className="lg:col-span-7 bg-white border border-zinc-100 rounded-2xl p-6 shadow-sm flex flex-col justify-between">
+        <div id="category-chart-box" className="lg:col-span-7 bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-2xl p-6 shadow-sm flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h3 className="font-semibold text-zinc-900 text-lg">Distribuição por Categoria</h3>
-                <p className="text-xs text-zinc-400">Classificação inteligente baseada no nome da despesa</p>
+                <h3 className="font-semibold text-zinc-900 dark:text-zinc-50 text-lg">Distribuição por Categoria</h3>
+                <p className="text-xs text-zinc-400 dark:text-zinc-400">Classificação inteligente baseada no nome da despesa</p>
               </div>
-              <span className="text-xs bg-zinc-100 text-zinc-600 py-1 px-2.5 rounded-full font-medium">
+              <span className="text-xs bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 py-1 px-2.5 rounded-full font-medium">
                 {categoryStats.length} Categorias Ativas
               </span>
             </div>
@@ -326,16 +326,16 @@ export default function Dashboard({ transactions, bankAccounts, summary, onSelec
                   <div className="flex items-center justify-between text-sm">
                     <div className="flex items-center gap-2">
                       <span className="text-base" role="img" aria-label={cat.name}>{cat.icon}</span>
-                      <span className="font-medium text-zinc-700">{cat.name}</span>
+                      <span className="font-medium text-zinc-700 dark:text-zinc-300">{cat.name}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="font-semibold text-zinc-900">
+                      <span className="font-semibold text-zinc-900 dark:text-zinc-100">
                         R$ {cat.value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                       </span>
                       <span className="text-xs text-zinc-400 font-mono">({cat.percentage.toFixed(1)}%)</span>
                     </div>
                   </div>
-                  <div className="w-full bg-zinc-100 rounded-full h-2 overflow-hidden relative">
+                  <div className="w-full bg-zinc-100 dark:bg-zinc-850 rounded-full h-2 overflow-hidden relative">
                     <motion.div 
                       className={`h-full ${cat.color} rounded-full`}
                       initial={{ width: 0 }}
@@ -351,11 +351,11 @@ export default function Dashboard({ transactions, bankAccounts, summary, onSelec
             </div>
           </div>
 
-          <div className="mt-5 pt-4 border-t border-zinc-50 flex items-center justify-between">
+          <div className="mt-5 pt-4 border-t border-zinc-50 dark:border-zinc-800 flex items-center justify-between">
             <span className="text-xs text-zinc-400">Gostando das categorias? Categorize mais faturas no menu histórico</span>
             <button 
               onClick={() => onSelectTab('history')}
-              className="text-xs text-zinc-800 font-medium flex items-center gap-1 hover:underline"
+              className="text-xs text-zinc-800 dark:text-zinc-200 font-medium flex items-center gap-1 hover:underline cursor-pointer"
             >
               Ver Detalhes <ChevronRight size={14} />
             </button>
@@ -363,11 +363,11 @@ export default function Dashboard({ transactions, bankAccounts, summary, onSelec
         </div>
 
         {/* Card Statement Share (Columns 5) */}
-        <div id="card-stats-box" className="lg:col-span-5 bg-white border border-zinc-100 rounded-2xl p-6 shadow-sm flex flex-col justify-between">
+        <div id="card-stats-box" className="lg:col-span-5 bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-2xl p-6 shadow-sm flex flex-col justify-between">
           <div>
             <div className="mb-4">
-              <h3 className="font-semibold text-zinc-900 text-lg">Divisão por Cartão</h3>
-              <p className="text-xs text-zinc-400">Onde estão concentrados seus maiores gastos de fatura</p>
+              <h3 className="font-semibold text-zinc-900 dark:text-zinc-50 text-lg">Divisão por Cartão</h3>
+              <p className="text-xs text-zinc-400 dark:text-zinc-400">Onde estão concentrados seus maiores gastos de fatura</p>
             </div>
 
             {/* Custom SVG Ring Donut Chart */}
@@ -378,7 +378,7 @@ export default function Dashboard({ transactions, bankAccounts, summary, onSelec
                     cx="60" 
                     cy="60" 
                     r="50" 
-                    className="stroke-zinc-100 fill-none" 
+                    className="stroke-zinc-100 dark:stroke-zinc-800 fill-none" 
                     strokeWidth="10" 
                   />
                   {svgCircleData.map((slice) => (
@@ -409,8 +409,8 @@ export default function Dashboard({ transactions, bankAccounts, summary, onSelec
                 </svg>
 
                 <div className="absolute flex flex-col items-center justify-center text-center">
-                  <span className="text-xs text-zinc-400 font-medium">Faturas</span>
-                  <span className="text-lg font-bold text-zinc-800">
+                  <span className="text-xs text-zinc-400 font-medium font-sans">Faturas</span>
+                  <span className="text-lg font-bold text-zinc-800 dark:text-zinc-150">
                     R$ {totalSpent > 1000 ? `${(totalSpent / 1000).toFixed(1)}k` : totalSpent.toFixed(0)}
                   </span>
                 </div>
@@ -422,16 +422,16 @@ export default function Dashboard({ transactions, bankAccounts, summary, onSelec
               {cardStats.map((stat) => (
                 <div 
                   key={stat.name}
-                  className={`flex items-center justify-between p-2 rounded-xl transition-all ${hoveredSlice === stat.name ? 'bg-zinc-50 border border-zinc-100 shadow-sm' : 'border border-transparent'}`}
+                  className={`flex items-center justify-between p-2 rounded-xl transition-all ${hoveredSlice === stat.name ? 'bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-150 dark:border-zinc-700 shadow-sm' : 'border border-transparent'}`}
                   onMouseEnter={() => setHoveredSlice(stat.name)}
                   onMouseLeave={() => setHoveredSlice(null)}
                 >
                   <div className="flex items-center gap-2.5">
                     <span className={`w-3 h-3 rounded-full ${stat.name === 'Nubank' ? 'bg-purple-600' : stat.name === 'Inter' ? 'bg-amber-500' : 'bg-cyan-500'}`} />
-                    <span className="text-sm font-medium text-zinc-700">{stat.name}</span>
+                    <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{stat.name}</span>
                   </div>
                   <div className="text-right">
-                    <span className="text-sm font-semibold text-zinc-800">
+                    <span className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">
                       R$ {stat.value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                     </span>
                     <span className="text-xs text-zinc-400 font-mono ml-2">({stat.percentage.toFixed(0)}%)</span>
@@ -448,14 +448,14 @@ export default function Dashboard({ transactions, bankAccounts, summary, onSelec
       <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
         
         {/* SVG Interactive Line Chart (Trend) (Columns 8) */}
-        <div id="trend-plot-box" className="md:col-span-8 bg-white border border-zinc-100 rounded-2xl p-6 shadow-sm flex flex-col justify-between">
+        <div id="trend-plot-box" className="md:col-span-8 bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-2xl p-6 shadow-sm flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h3 className="font-semibold text-zinc-900 text-lg">Evolução de Gastos Recentes</h3>
-                <p className="text-xs text-zinc-400">Total somado por fatura mensal faturada (Inter, Nubank, Neon)</p>
+                <h3 className="font-semibold text-zinc-900 dark:text-zinc-100 text-lg">Evolução de Gastos Recentes</h3>
+                <p className="text-xs text-zinc-400 dark:text-zinc-400">Total somado por fatura mensal faturada (Inter, Nubank, Neon)</p>
               </div>
-              <span className="flex items-center gap-1 text-xs text-emerald-600 font-medium bg-emerald-50 py-1 px-2.5 rounded-full">
+              <span className="flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400 font-medium bg-emerald-50 dark:bg-emerald-950/20 py-1 px-2.5 rounded-full">
                 <TrendingUp size={14} /> Atualizado (2026)
               </span>
             </div>
@@ -465,9 +465,9 @@ export default function Dashboard({ transactions, bankAccounts, summary, onSelec
                 {/* SVG Area Line Chart */}
                 <svg className="w-full h-full" viewBox="0 0 500 150" preserveAspectRatio="none">
                   {/* Grid Lines */}
-                  <line x1="0" y1="30" x2="500" y2="30" stroke="#f4f4f5" strokeWidth="1" />
-                  <line x1="0" y1="75" x2="500" y2="75" stroke="#f4f4f5" strokeWidth="1" />
-                  <line x1="0" y1="120" x2="500" y2="120" stroke="#f4f4f5" strokeWidth="1" />
+                  <line x1="0" y1="30" x2="500" y2="30" className="stroke-zinc-100 dark:stroke-zinc-800/80" strokeWidth="1" />
+                  <line x1="0" y1="75" x2="500" y2="75" className="stroke-zinc-100 dark:stroke-zinc-800/80" strokeWidth="1" />
+                  <line x1="0" y1="120" x2="500" y2="120" className="stroke-zinc-100 dark:stroke-zinc-800/80" strokeWidth="1" />
 
                   {/* Draw the area and line path */}
                   {(() => {
@@ -512,8 +512,7 @@ export default function Dashboard({ transactions, bankAccounts, summary, onSelec
                               fontSize="8" 
                               fontWeight="600"
                               textAnchor="middle" 
-                              fill="#18181b"
-                              className="hidden group-hover:block whitespace-nowrap bg-zinc-900 text-white rounded p-1"
+                              className="hidden group-hover:block fill-zinc-900 dark:fill-zinc-100 font-sans font-bold"
                             >
                               R$ {p.val.toFixed(0)}
                             </text>
@@ -527,7 +526,7 @@ export default function Dashboard({ transactions, bankAccounts, summary, onSelec
                             x={p.x} 
                             y={height - 2} 
                             fontSize="8" 
-                            fill="#71717a" 
+                            className="fill-zinc-500 dark:fill-zinc-400 font-medium" 
                             textAnchor="middle"
                           >
                             {trendData[i].monthName.slice(0, 3)}/{trendData[i].year % 100}
@@ -537,8 +536,8 @@ export default function Dashboard({ transactions, bankAccounts, summary, onSelec
                         {/* Gradient definition */}
                         <defs>
                           <linearGradient id="grad" x1="0%" y1="0%" x2="0%" y2="100%">
-                            <stop offset="0%" stopColor="#6366f1" />
-                            <stop offset="100%" stopColor="#ffffff" />
+                            <stop offset="0%" stopColor="#6366f1" stopOpacity="0.4" />
+                            <stop offset="100%" stopColor="#6366f1" stopOpacity="0" />
                           </linearGradient>
                         </defs>
                       </>
@@ -564,7 +563,7 @@ export default function Dashboard({ transactions, bankAccounts, summary, onSelec
                 <ShieldCheck size={20} className="shrink-0" />
                 <h4 className="font-semibold text-sm uppercase tracking-wider">Análise do Consultor</h4>
               </div>
-              <h3 className="font-bold text-lg text-zinc-900 border-b border-zinc-200/50 pb-1.5 pt-1">
+              <h3 className="font-bold text-lg text-zinc-900 dark:text-zinc-50 border-b border-zinc-200/50 dark:border-zinc-800/80 pb-1.5 pt-1">
                 {financialHealthAdvice.title}
               </h3>
               <p className="text-xs leading-relaxed opacity-95">
@@ -579,19 +578,19 @@ export default function Dashboard({ transactions, bankAccounts, summary, onSelec
           </div>
 
           {/* Quick Balance Breakdown snippet */}
-          <div className="bg-zinc-50 border border-zinc-100 rounded-2xl p-5 flex flex-col justify-between h-[120px]">
-            <span className="text-zinc-500 text-xs font-semibold uppercase tracking-wider flex items-center gap-1">
+          <div className="bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-100 dark:border-zinc-800/80 rounded-2xl p-5 flex flex-col justify-between h-[120px]">
+            <span className="text-zinc-500 dark:text-zinc-400 text-xs font-semibold uppercase tracking-wider flex items-center gap-1">
               <Percent size={14} /> Comprometimento Renda
             </span>
             <div className="flex items-end justify-between">
               <div>
-                <span className="text-2xl font-bold text-zinc-800">
+                <span className="text-2xl font-bold text-zinc-800 dark:text-zinc-150">
                   {((summary.despesasMensais / (summary.saldoBrutoTotal || 1)) * 100).toFixed(1)}%
                 </span>
-                <p className="text-[10px] text-zinc-400 mt-0.5">Das receitas totais</p>
+                <p className="text-[10px] text-zinc-400 dark:text-zinc-550 mt-0.5">Das receitas totais</p>
               </div>
-              <span className="text-xs text-zinc-500 text-right">
-                Gasto mensal médio: <strong className="text-zinc-800">R$ {summary.despesasMensais.toFixed(2)}</strong>
+              <span className="text-xs text-zinc-500 dark:text-zinc-400 text-right">
+                Gasto mensal médio: <strong className="text-zinc-800 dark:text-zinc-200">R$ {summary.despesasMensais.toFixed(2)}</strong>
               </span>
             </div>
           </div>
@@ -601,17 +600,17 @@ export default function Dashboard({ transactions, bankAccounts, summary, onSelec
       </div>
 
       {/* Under bento: Current Bank Accounts lists */}
-      <div id="accounts-row" className="bg-white border border-zinc-100 rounded-2xl p-6 shadow-sm">
+      <div id="accounts-row" className="bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-2xl p-6 shadow-sm">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-5">
           <div>
-            <h3 className="font-semibold text-zinc-900 text-lg">Saldos Disponíveis em Contas</h3>
-            <p className="text-xs text-zinc-400">Dados declarados das reservas liquidas do orçamento pessoal</p>
+            <h3 className="font-semibold text-zinc-900 dark:text-zinc-50 text-lg">Saldos Disponíveis em Contas</h3>
+            <p className="text-xs text-zinc-400 dark:text-zinc-400">Dados declarados das reservas liquidas do orçamento pessoal</p>
           </div>
           <div className="flex items-center gap-3 self-start sm:self-center">
-            <span className="text-xs text-zinc-400 font-mono">Total: R$ {totalAccountBalance.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+            <span className="text-xs text-zinc-400 dark:text-zinc-400 font-mono">Total: R$ {totalAccountBalance.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
             <button 
               onClick={openEditAccountsModal}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-zinc-200 text-zinc-700 bg-zinc-50 hover:bg-zinc-100 text-xs font-bold select-none cursor-pointer transition-all shadow-sm"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 bg-zinc-50 dark:bg-zinc-850 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-xs font-bold select-none cursor-pointer transition-all shadow-sm"
             >
               <Pencil size={12} />
               Editar Saldos
@@ -623,12 +622,12 @@ export default function Dashboard({ transactions, bankAccounts, summary, onSelec
           {bankAccounts.map((account) => {
             const hasExtras = account.extras && account.extras.length > 0;
             const extraTotal = hasExtras ? account.extras.reduce((s, e) => s + e, 0) : 0;
-            const totalColor = account.name.includes('Nubank') ? 'border-purple-200 bg-purple-50/20 text-purple-700' :
-                              account.name.includes('Inter') ? 'border-amber-200 bg-amber-50/20 text-amber-700' :
-                              account.name.includes('Mercado Pago') ? 'border-blue-200 bg-blue-50/20 text-blue-700' :
-                              account.name.includes('Banco do Brasil') ? 'border-yellow-200 bg-yellow-55/20 text-yellow-800' :
-                              account.name.includes('Faturas Debitadas') ? 'border-rose-200 bg-rose-50/10 text-rose-700' :
-                              'border-emerald-200 bg-emerald-50/20 text-emerald-700';
+            const totalColor = account.name.includes('Nubank') ? 'border-purple-200 dark:border-purple-900/40 bg-purple-50/20 dark:bg-purple-950/10 text-purple-700 dark:text-purple-300' :
+                              account.name.includes('Inter') ? 'border-amber-200 dark:border-amber-900/40 bg-amber-50/20 dark:bg-amber-950/10 text-amber-700 dark:text-amber-300' :
+                              account.name.includes('Mercado Pago') ? 'border-blue-200 dark:border-blue-900/40 bg-blue-50/20 dark:bg-blue-950/10 text-blue-700 dark:text-blue-300' :
+                              account.name.includes('Banco do Brasil') ? 'border-yellow-200 dark:border-yellow-900/40 bg-yellow-55/20 dark:bg-yellow-950/10 text-yellow-800 dark:text-yellow-300' :
+                              account.name.includes('Faturas Debitadas') ? 'border-rose-200 dark:border-rose-900/40 bg-rose-50/10 dark:bg-rose-950/10 text-rose-700 dark:text-rose-300' :
+                              'border-emerald-200 dark:border-emerald-900/40 bg-emerald-50/20 dark:bg-emerald-950/10 text-emerald-700 dark:text-emerald-300';
 
             return (
               <div 
@@ -637,14 +636,14 @@ export default function Dashboard({ transactions, bankAccounts, summary, onSelec
               >
                 <div>
                   <span className="text-xs font-semibold tracking-wide block truncate opacity-80">{account.name}</span>
-                  <span className="text-base font-bold text-zinc-800 mt-1.5 block">
+                  <span className="text-base font-bold text-zinc-800 dark:text-zinc-100 mt-1.5 block">
                     R$ {(account.value + extraTotal).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                   </span>
                 </div>
                 {hasExtras && (
-                  <div className="mt-2 text-[10px] text-zinc-400 border-t border-zinc-100 pt-1 flex flex-col gap-0.5">
+                  <div className="mt-2 text-[10px] text-zinc-400 dark:text-zinc-500 border-t border-zinc-100 dark:border-zinc-800/80 pt-1 flex flex-col gap-0.5">
                     <span>Base: R$ {account.value.toFixed(0)}</span>
-                    <span className="text-zinc-600 font-medium">Extras: R$ {extraTotal.toFixed(0)}</span>
+                    <span className="text-zinc-600 dark:text-zinc-350 font-medium">Extras: R$ {extraTotal.toFixed(0)}</span>
                   </div>
                 )}
               </div>
@@ -656,15 +655,15 @@ export default function Dashboard({ transactions, bankAccounts, summary, onSelec
       {/* Modal de Edição de Saldos */}
       {isEditingAccounts && (
         <div id="edit-accounts-modal" className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm z-[99999]">
-          <div className="bg-white rounded-2xl shadow-xl border border-zinc-100 max-w-2xl w-full max-h-[85vh] flex flex-col">
-            <div className="p-6 border-b border-zinc-100 flex items-center justify-between">
+          <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-xl border border-zinc-100 dark:border-zinc-800 max-w-2xl w-full max-h-[85vh] flex flex-col">
+            <div className="p-6 border-b border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
               <div>
-                <h3 className="font-bold text-zinc-900 text-lg">Editar Saldos & Contas</h3>
-                <p className="text-xs text-zinc-400">Modifique os valores disponíveis nas suas contas ativas</p>
+                <h3 className="font-bold text-zinc-900 dark:text-zinc-50 text-lg">Editar Saldos & Contas</h3>
+                <p className="text-xs text-zinc-400 dark:text-zinc-450 font-sans">Modifique os valores disponíveis nas suas contas ativas</p>
               </div>
               <button 
                 onClick={() => setIsEditingAccounts(false)}
-                className="p-1.5 rounded-lg text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700 transition-all cursor-pointer"
+                className="p-1.5 rounded-lg text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-700 dark:hover:text-zinc-300 transition-all cursor-pointer"
               >
                 <X size={18} />
               </button>
@@ -673,39 +672,39 @@ export default function Dashboard({ transactions, bankAccounts, summary, onSelec
             <div className="p-6 overflow-y-auto space-y-4 flex-1">
               <div className="space-y-3">
                 {editingAccounts.map((account, index) => (
-                  <div key={index} className="p-4 border border-zinc-100 rounded-xl bg-zinc-50/50 flex flex-col md:flex-row md:items-center gap-3 relative group">
+                  <div key={index} className="p-4 border border-zinc-100 dark:border-zinc-800 rounded-xl bg-zinc-50/50 dark:bg-zinc-950/40 flex flex-col md:flex-row md:items-center gap-3 relative group">
                     <div className="flex-1 space-y-1">
-                      <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">Nome do Banco / Conta</label>
+                      <label className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider block">Nome do Banco / Conta</label>
                       <input 
                         type="text"
                         value={account.name}
                         onChange={(e) => handleAccountNameChange(index, e.target.value)}
-                        className="w-full text-xs font-semibold px-3 py-2 border border-zinc-200 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-zinc-900 focus:border-zinc-900 transition-all text-zinc-800"
+                        className="w-full text-xs font-semibold px-3 py-2 border border-zinc-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-800 focus:outline-none focus:ring-1 focus:ring-zinc-900 focus:border-zinc-900 dark:focus:ring-zinc-600 dark:focus:border-zinc-600 transition-all text-zinc-800 dark:text-zinc-100"
                         placeholder="Ex: Nubank, Banco Inter"
                       />
                     </div>
                     
                     <div className="w-full md:w-32 space-y-1">
-                      <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">Saldo Base (R$)</label>
+                      <label className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider block">Saldo Base (R$)</label>
                       <input 
                         type="number"
                         step="any"
                         value={account.value}
                         onChange={(e) => handleAccountValueChange(index, e.target.value)}
-                        className="w-full text-xs font-mono font-semibold px-3 py-2 border border-zinc-200 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-zinc-900 focus:border-zinc-900 transition-all text-zinc-800"
+                        className="w-full text-xs font-mono font-semibold px-3 py-2 border border-zinc-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-800 focus:outline-none focus:ring-1 focus:ring-zinc-900 focus:border-zinc-900 dark:focus:ring-zinc-600 dark:focus:border-zinc-600 transition-all text-zinc-800 dark:text-zinc-100"
                         placeholder="0.00"
                       />
                     </div>
 
                     <div className="flex-1 space-y-1">
-                      <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">
+                      <label className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider block">
                         Valores Extras (separados por vírgula)
                       </label>
                       <input 
                         type="text"
                         value={account.extras ? account.extras.join(', ') : ''}
                         onChange={(e) => handleAccountExtrasChange(index, e.target.value)}
-                        className="w-full text-xs font-mono px-3 py-2 border border-zinc-200 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-zinc-900 focus:border-zinc-900 transition-all text-zinc-600"
+                        className="w-full text-xs font-mono px-3 py-2 border border-zinc-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-800 focus:outline-none focus:ring-1 focus:ring-zinc-900 focus:border-zinc-900 dark:focus:ring-zinc-600 dark:focus:border-zinc-600 transition-all text-zinc-650 dark:text-zinc-300"
                         placeholder="Ex: 100.50, 450"
                       />
                     </div>
@@ -714,7 +713,7 @@ export default function Dashboard({ transactions, bankAccounts, summary, onSelec
                       <button 
                         type="button"
                         onClick={() => removeAccount(index)}
-                        className="p-2 rounded-lg text-rose-500 hover:bg-rose-50 border border-transparent hover:border-rose-100 transition-all cursor-pointer"
+                        className="p-2 rounded-lg text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 border border-transparent hover:border-rose-100 dark:hover:border-rose-900/50 transition-all cursor-pointer"
                         title="Excluir Conta"
                       >
                         <Trash2 size={16} />
@@ -727,23 +726,23 @@ export default function Dashboard({ transactions, bankAccounts, summary, onSelec
               <button 
                 type="button"
                 onClick={addAccount}
-                className="w-full py-3 border border-dashed border-zinc-200 hover:border-zinc-400 hover:bg-zinc-50 rounded-xl text-zinc-500 hover:text-zinc-800 text-xs font-medium flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                className="w-full py-3 border border-dashed border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-650 hover:bg-zinc-50 dark:hover:bg-zinc-850/40 rounded-xl text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 text-xs font-medium flex items-center justify-center gap-1.5 transition-all cursor-pointer"
               >
                 <Plus size={14} />
                 Adicionar Nova Conta
               </button>
             </div>
 
-            <div className="p-6 border-t border-zinc-100 bg-zinc-50/50 rounded-b-2xl flex items-center justify-end gap-3 font-medium">
+            <div className="p-6 border-t border-zinc-100 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-950/30 rounded-b-2xl flex items-center justify-end gap-3 font-medium">
               <button 
                 onClick={() => setIsEditingAccounts(false)}
-                className="px-4 py-2 border border-zinc-200 rounded-xl bg-white hover:bg-zinc-100 text-zinc-700 text-xs font-bold cursor-pointer transition-all"
+                className="px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 text-xs font-bold cursor-pointer transition-all"
               >
                 Cancelar
               </button>
               <button 
                 onClick={saveEditedAccounts}
-                className="px-4 py-2 bg-zinc-950 hover:bg-zinc-900 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-sm transition-all"
+                className="px-4 py-2 bg-zinc-950 dark:bg-zinc-100 hover:bg-zinc-900 dark:hover:bg-zinc-200 text-white dark:text-zinc-950 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-sm transition-all"
               >
                 <Save size={14} />
                 Salvar Alterações

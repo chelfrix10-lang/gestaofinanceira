@@ -129,18 +129,18 @@ export default function AIChat({ onSendMessage }: AIChatProps) {
       <div className="lg:col-span-4 flex flex-col gap-4 h-full overflow-y-auto pr-1">
         
         {/* Suggestion Chips Box */}
-        <div className="bg-white border border-zinc-100 rounded-2xl p-5 shadow-sm space-y-4">
-          <h4 className="font-semibold text-zinc-900 text-sm flex items-center gap-1.5">
+        <div className="bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-2xl p-5 shadow-sm space-y-4">
+          <h4 className="font-semibold text-zinc-900 dark:text-zinc-55 text-sm flex items-center gap-1.5">
             <Sparkles size={16} className="text-amber-500" /> Perguntas Frequentes
           </h4>
-          <p className="text-xs text-zinc-500">Clique em qualquer sugestão sugerida para extrair relatórios diretamente da Inteligência Artificial:</p>
+          <p className="text-xs text-zinc-550 dark:text-zinc-450 font-sans">Clique em qualquer sugestão sugerida para extrair relatórios diretamente da Inteligência Artificial:</p>
           <div className="flex flex-col gap-2">
             {PRESET_PROMPTS.map((p) => (
               <button
                 key={p.label}
                 onClick={() => handleSend(p.text)}
                 disabled={loading}
-                className="w-full text-left py-2.5 px-3 border border-zinc-150 rounded-xl text-xs font-medium text-zinc-700 bg-zinc-50 hover:bg-zinc-100 active:bg-zinc-200 hover:border-zinc-300 transition-all cursor-pointer block truncate"
+                className="w-full text-left py-2.5 px-3 border border-zinc-150 dark:border-zinc-800 rounded-xl text-xs font-medium text-zinc-700 dark:text-zinc-300 bg-zinc-50 dark:bg-zinc-850 hover:bg-zinc-100 dark:hover:bg-zinc-800 active:bg-zinc-200 dark:active:bg-zinc-750 hover:border-zinc-300 dark:hover:border-zinc-700 transition-all cursor-pointer block truncate"
               >
                 {p.label}
               </button>
@@ -163,23 +163,23 @@ export default function AIChat({ onSendMessage }: AIChatProps) {
       </div>
 
       {/* Main Chat Feed on right (Col-8) */}
-      <div className="lg:col-span-8 flex flex-col bg-white border border-zinc-100 rounded-2xl shadow-sm h-full overflow-hidden">
+      <div className="lg:col-span-8 flex flex-col bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-2xl shadow-sm h-full overflow-hidden">
         
         {/* Chat Feed Header */}
-        <div className="p-4 border-b border-zinc-50 flex items-center justify-between">
+        <div className="p-4 border-b border-zinc-50 dark:border-zinc-800/80 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-full bg-zinc-950 text-white flex items-center justify-center font-bold">
+            <div className="w-9 h-9 rounded-full bg-zinc-950 dark:bg-zinc-50 text-white dark:text-zinc-950 flex items-center justify-center font-bold">
               <Bot size={18} />
             </div>
             <div>
-              <h3 className="font-semibold text-zinc-900 text-sm">Consultor Inteligente</h3>
-              <p className="text-[10px] text-zinc-400">Análise estruturada de despesas com Gemini 3.5 Flash</p>
+              <h3 className="font-semibold text-zinc-900 dark:text-zinc-100 text-sm">Consultor Inteligente</h3>
+              <p className="text-[10px] text-zinc-400 dark:text-zinc-500">Análise estruturada de despesas com Gemini 3.5 Flash</p>
             </div>
           </div>
           
           <button 
             onClick={clearChat}
-            className="text-zinc-400 hover:text-rose-500 p-2 rounded-xl transition-all hover:bg-zinc-50 cursor-pointer"
+            className="text-zinc-400 hover:text-rose-500 p-2 rounded-xl transition-all hover:bg-zinc-50 dark:hover:bg-zinc-850 cursor-pointer"
             title="Limpar Conversa"
           >
             <Trash2 size={16} />
@@ -199,7 +199,7 @@ export default function AIChat({ onSendMessage }: AIChatProps) {
                   className={`flex gap-3 max-w-[85%] ${isAi ? 'self-start' : 'self-end flex-row-reverse ml-auto'}`}
                 >
                   <div className={`w-8 h-8 rounded-full shrink-0 flex items-center justify-center text-xs ${
-                    isAi ? 'bg-zinc-100 text-zinc-800 border border-zinc-200' : 'bg-zinc-950 text-white'
+                    isAi ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-700' : 'bg-zinc-950 dark:bg-zinc-50 text-white dark:text-zinc-950'
                   }`}>
                     {isAi ? <Bot size={14} /> : <User size={14} />}
                   </div>
@@ -207,11 +207,11 @@ export default function AIChat({ onSendMessage }: AIChatProps) {
                   <div className="space-y-1">
                     <div className={`rounded-2xl p-4 text-sm ${
                       isAi 
-                        ? 'bg-zinc-50/70 border border-zinc-100 text-zinc-800' 
-                        : 'bg-zinc-950 text-white font-medium shadow-sm'
+                        ? 'bg-zinc-50/70 dark:bg-zinc-950/40 border border-zinc-100 dark:border-zinc-800 text-zinc-800 dark:text-zinc-200' 
+                        : 'bg-zinc-950 dark:bg-zinc-100 text-white dark:text-zinc-950 font-medium shadow-sm'
                     }`}>
                       {isAi ? (
-                        <div className="markdown-body">
+                        <div className="markdown-body text-zinc-850 dark:text-zinc-200">
                           <Markdown>{m.content}</Markdown>
                         </div>
                       ) : (
@@ -233,12 +233,12 @@ export default function AIChat({ onSendMessage }: AIChatProps) {
                 animate={{ opacity: 1, y: 0 }}
                 className="flex gap-3 max-w-[80%]"
               >
-                <div className="w-8 h-8 rounded-full bg-zinc-100 border border-zinc-200 flex items-center justify-center text-zinc-650">
+                <div className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 flex items-center justify-center text-zinc-650 dark:text-zinc-350">
                   <Bot size={14} />
                 </div>
                 <div className="space-y-2">
-                  <div className="bg-zinc-50 border border-zinc-100 rounded-2xl p-4 text-xs font-semibold text-zinc-500 flex items-center gap-2">
-                    <Loader2 size={14} className="animate-spin text-zinc-600" />
+                  <div className="bg-zinc-50 dark:bg-zinc-950/40 border border-zinc-100 dark:border-zinc-800 rounded-2xl p-4 text-xs font-semibold text-zinc-500 dark:text-zinc-400 flex items-center gap-2">
+                    <Loader2 size={14} className="animate-spin text-zinc-600 dark:text-zinc-400" />
                     <span>{LOADING_STEPS[loadingStepIndex]}</span>
                   </div>
                 </div>
@@ -249,7 +249,7 @@ export default function AIChat({ onSendMessage }: AIChatProps) {
         </div>
 
         {/* Input prompt footer */}
-        <div className="p-4 border-t border-zinc-50 bg-zinc-50/50">
+        <div className="p-4 border-t border-zinc-50 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-950/20">
           <form 
             onSubmit={(e) => {
               e.preventDefault();
@@ -262,7 +262,7 @@ export default function AIChat({ onSendMessage }: AIChatProps) {
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               placeholder="Pergunte ao Gemini: 'Quanto gastei no Nubank em 2025?'"
-              className="flex-1 px-4 py-3 bg-white border border-zinc-150 rounded-xl text-xs text-zinc-750 focus:outline-none focus:ring-1 focus:ring-zinc-900 placeholder-zinc-400 font-medium"
+              className="flex-1 px-4 py-3 bg-white dark:bg-zinc-850 border border-zinc-150 dark:border-zinc-700 rounded-xl text-xs text-zinc-750 dark:text-zinc-200 focus:outline-none focus:ring-1 focus:ring-zinc-900 dark:focus:ring-zinc-600 placeholder-zinc-400 dark:placeholder-zinc-500 font-medium"
               disabled={loading}
             />
             <button
@@ -270,8 +270,8 @@ export default function AIChat({ onSendMessage }: AIChatProps) {
               disabled={!inputValue.trim() || loading}
               className={`p-3 rounded-xl shadow-md flex items-center justify-center text-white transition-all ${
                 !inputValue.trim() || loading 
-                  ? 'bg-zinc-300 cursor-not-allowed shadow-none' 
-                  : 'bg-zinc-950 hover:bg-zinc-900 active:scale-95 cursor-pointer'
+                  ? 'bg-zinc-300 dark:bg-zinc-800 cursor-not-allowed shadow-none' 
+                  : 'bg-zinc-950 dark:bg-zinc-100 hover:bg-zinc-900 dark:hover:bg-zinc-250 text-white dark:text-zinc-950 active:scale-95 cursor-pointer'
               }`}
             >
               <Send size={14} />
@@ -281,6 +281,6 @@ export default function AIChat({ onSendMessage }: AIChatProps) {
 
       </div>
 
-    </div>
-  );
-}
+      </div>
+    );
+  }

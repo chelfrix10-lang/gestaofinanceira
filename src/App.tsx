@@ -24,6 +24,24 @@ export default function App() {
   const [resetLoading, setResetLoading] = useState<boolean>(false);
   const [errorMsg, setErrorMsg] = useState<string>('');
 
+  // Theme State (Claro/Escuro)
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    return (localStorage.getItem('fp_theme') as 'light' | 'dark') || 'light';
+  });
+
+  useEffect(() => {
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    localStorage.setItem('fp_theme', theme);
+  }, [theme]);
+
+  const handleToggleTheme = () => {
+    setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+  };
+
   // Authentication & Session States
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
     return sessionStorage.getItem('fp_authenticated') === 'true';
@@ -635,7 +653,7 @@ Como estou rodando em **modo offline resiliente** para garantir que você não p
     : undefined;
 
   return (
-    <div className="min-h-screen bg-[#fafafa] flex flex-col">
+    <div className="min-h-screen bg-[#fafafa] dark:bg-zinc-950 text-zinc-900 dark:text-zinc-50 flex flex-col transition-colors duration-200">
       <Header
         currentTab={currentTab}
         onSelectTab={setCurrentTab}
@@ -643,6 +661,8 @@ Como estou rodando em **modo offline resiliente** para garantir que você não p
         userSessionInfo={userSessionInfo}
         onLogout={handleLogout}
         activeUser={activeUser}
+        theme={theme}
+        onToggleTheme={handleToggleTheme}
       />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
