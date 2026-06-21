@@ -98,7 +98,7 @@ export default function App() {
 
     data.summary.saldoBrutoTotal = totalAccountBalance - debitedCustomTxsSum;
     data.summary.despesasMensais = totalSpent;
-    data.summary.saldoLiquidoTotal = (totalAccountBalance - debitedCustomTxsSum) - totalSpent;
+    data.summary.saldoLiquidoTotal = totalAccountBalance - totalSpent;
   };
 
   // Helper to generate a highly responsive offline financial assistant reply

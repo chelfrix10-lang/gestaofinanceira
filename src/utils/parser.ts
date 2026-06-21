@@ -398,7 +398,7 @@ export function parseFinancialData(csvText: string): FinancialData {
 
   summary.saldoBrutoTotal = totalAccountBalance - debitedCustomTxsSum;
   summary.despesasMensais = totalSpent;
-  summary.saldoLiquidoTotal = (totalAccountBalance - debitedCustomTxsSum) - totalSpent;
+  summary.saldoLiquidoTotal = totalAccountBalance - totalSpent;
 
   return {
     transactions,

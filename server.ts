@@ -62,7 +62,7 @@ function recalculateSummary(data: typeof parsedData) {
 
   data.summary.saldoBrutoTotal = totalAccountBalance - debitedCustomTxsSum;
   data.summary.despesasMensais = totalSpent;
-  data.summary.saldoLiquidoTotal = (totalAccountBalance - debitedCustomTxsSum) - totalSpent;
+  data.summary.saldoLiquidoTotal = totalAccountBalance - totalSpent;
 }
 
 // Lazy-loaded Gemini AI client
