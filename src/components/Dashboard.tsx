@@ -104,7 +104,7 @@ export default function Dashboard({ transactions, bankAccounts, summary, onSelec
     const stats: Record<string, { value: number; count: number; color: string }> = {
       'Nubank': { value: 0, count: 0, color: 'bg-purple-600 text-purple-600 border-purple-500' },
       'Inter': { value: 0, count: 0, color: 'bg-amber-500 text-amber-500 border-amber-400' },
-      'Neon': { value: 0, count: 0, color: 'bg-cyan-500 text-cyan-500 border-cyan-400' }
+      'Mercado Pago': { value: 0, count: 0, color: 'bg-zinc-950 dark:bg-zinc-100 text-zinc-950 dark:text-zinc-50 border-zinc-800 dark:border-zinc-700' }
     };
 
     transactions.forEach(t => {
@@ -453,7 +453,7 @@ export default function Dashboard({ transactions, bankAccounts, summary, onSelec
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h3 className="font-semibold text-zinc-900 dark:text-zinc-100 text-lg">Evolução de Gastos Recentes</h3>
-                <p className="text-xs text-zinc-400 dark:text-zinc-400">Total somado por fatura mensal faturada (Inter, Nubank, Neon)</p>
+                <p className="text-xs text-zinc-400 dark:text-zinc-400">Total somado por fatura mensal faturada (Inter, Nubank, Mercado Pago)</p>
               </div>
               <span className="flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400 font-medium bg-emerald-50 dark:bg-emerald-950/20 py-1 px-2.5 rounded-full">
                 <TrendingUp size={14} /> Atualizado (2026)

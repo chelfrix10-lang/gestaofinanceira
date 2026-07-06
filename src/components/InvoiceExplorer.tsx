@@ -61,7 +61,7 @@ export default function InvoiceExplorer({ transactions, onUpdateCategory, onUpda
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('Todos');
   const [onlyMom, setOnlyMom] = useState<boolean>(false);
-  const [activeFolder, setActiveFolder] = useState<'Inter' | 'Nubank'>('Inter');
+  const [activeFolder, setActiveFolder] = useState<'Inter' | 'Nubank' | 'Mercado Pago'>('Inter');
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   // Fallback to first available key if current selected doesn't exist anymore or is empty
@@ -99,7 +99,7 @@ export default function InvoiceExplorer({ transactions, onUpdateCategory, onUpda
 
   // Statistics for the chosen month bill
   const monthlyStats = useMemo(() => {
-    let neonTotal = 0;
+    let mercadoPagoTotal = 0;
     let interTotal = 0;
     let nubankTotal = 0;
     let momTotal = 0;
@@ -108,16 +108,16 @@ export default function InvoiceExplorer({ transactions, onUpdateCategory, onUpda
       const key = `${t.month} ${t.year}`;
       if (key !== activeMonthKey) return;
 
-      if (t.card === 'Neon') neonTotal += t.value;
+      if (t.card === 'Mercado Pago') mercadoPagoTotal += t.value;
       if (t.card === 'Inter') interTotal += t.value;
       if (t.card === 'Nubank') nubankTotal += t.value;
       if (t.isMom) momTotal += t.value;
     });
 
-    const totalBill = neonTotal + interTotal + nubankTotal;
+    const totalBill = mercadoPagoTotal + interTotal + nubankTotal;
 
     return {
-      neonTotal,
+      mercadoPagoTotal,
       interTotal,
       nubankTotal,
       momTotal,
@@ -194,13 +194,13 @@ export default function InvoiceExplorer({ transactions, onUpdateCategory, onUpda
                   </span>
                 </div>
               )}
-              {monthlyStats.neonTotal > 0 && (
+              {monthlyStats.mercadoPagoTotal > 0 && (
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-zinc-500 dark:text-zinc-400 font-medium flex items-center gap-1.5">
-                    <span className="w-2.5 h-2.5 rounded-full bg-cyan-500" /> Neon
+                    <span className="w-2.5 h-2.5 rounded-full bg-zinc-950 dark:bg-zinc-100 border border-zinc-200/50" /> Mercado Pago
                   </span>
                   <span className="font-semibold text-zinc-800 dark:text-zinc-200">
-                    R$ {monthlyStats.neonTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                    R$ {monthlyStats.mercadoPagoTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                   </span>
                 </div>
               )}
@@ -281,8 +281,8 @@ export default function InvoiceExplorer({ transactions, onUpdateCategory, onUpda
               </span>
             </div>
 
-            {/* Pastas de Cartões (Folders for Inter & Nubank) */}
-            <div className="flex border-b border-zinc-100 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-950/20 p-2.5 gap-2.5">
+            {/* Pastas de Cartões (Folders for Inter, Nubank & Mercado Pago) */}
+            <div className="flex border-b border-zinc-100 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-950/20 p-2.5 gap-2.5 flex-wrap">
               <button
                 type="button"
                 onClick={() => setActiveFolder('Inter')}
@@ -306,6 +306,18 @@ export default function InvoiceExplorer({ transactions, onUpdateCategory, onUpda
               >
                 {activeFolder === 'Nubank' ? <FolderOpen size={14} /> : <Folder size={14} />}
                 Pasta Nubank 🍇
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveFolder('Mercado Pago')}
+                className={`flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-xl border transition-all cursor-pointer ${
+                  activeFolder === 'Mercado Pago'
+                    ? 'bg-zinc-900 border-zinc-950/20 dark:bg-zinc-100 dark:border-zinc-200 dark:text-zinc-950 text-white shadow-sm font-bold'
+                    : 'bg-white dark:bg-zinc-800 border-zinc-100 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-700 hover:text-zinc-800 dark:hover:text-zinc-200'
+                }`}
+              >
+                {activeFolder === 'Mercado Pago' ? <FolderOpen size={14} /> : <Folder size={14} />}
+                Pasta Mercado Pago 🖤
               </button>
             </div>
 

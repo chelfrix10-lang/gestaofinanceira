@@ -11,7 +11,7 @@ export interface Transaction {
   month: string; // e.g. "Março", "Abril"
   form: string;  // e.g. "À Vista", "Parcl 1"
   value: number; // Raw float number
-  card: string;  // "Neon" | "Nubank" | "Inter"
+  card: string;  // "Mercado Pago" | "Nubank" | "Inter"
   category: string; // "Alimentação" | "Habitação" | "Transporte" | "Lazer/Moda" | "Saúde" | "Outros"
   isMom?: boolean;  // True if it is for his mom (indicated by "(Mãe)")
   debited?: boolean; // True if transaction has been manually debited/cleared from balance

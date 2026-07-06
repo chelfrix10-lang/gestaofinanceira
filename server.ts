@@ -346,7 +346,7 @@ async function startServer() {
         .join('\n');
 
       const systemInstruction = `Você é o analisador oficial e especialista de finanças pessoais do usuário.
-Sua tarefa é ler atentamente os dados financeiros fornecidos (contas bancárias e transações de faturas de Nubank, Inter e Neon de 2024 a 2026) e responder com extrema precisão, educação e clareza em português do Brasil.
+Sua tarefa é ler atentamente os dados financeiros fornecidos (contas bancárias e transações de faturas de Nubank, Inter e Mercado Pago de 2024 a 2026) e responder com extrema precisão, educação e clareza em português do Brasil.
 
 INTRUÇÕES IMPORTANTES:
 1. Responda de forma altamente estruturada. Use subtítulos, tabelas em Markdown, negrito ou listas com bullet points.

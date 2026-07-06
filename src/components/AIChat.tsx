@@ -44,7 +44,7 @@ export default function AIChat({ onSendMessage }: AIChatProps) {
     {
       id: 'welcome',
       role: 'model',
-      content: 'Olá! Sou o seu consultor inteligente de finanças pessoais.\n\nFui carregado com todos os dados de suas faturas dos cartões de crédito (Nubank, Inter e Neon) de 2024 a 2026, além dos seus saldos em conta.\n\nVocê pode me fazer perguntas diretas sobre o orçamento. Por exemplo:\n- *"Quanto gastei com farmácia?"*\n- *"Qual foi o maior gasto de 2025 e em qual cartão?"*\n- *"Resuma as compras que fiz para a minha mãe."*\n\nComo posso ajudar você a otimizar suas finanças hoje?',
+      content: 'Olá! Sou o seu consultor inteligente de finanças pessoais.\n\nFui carregado com todos os dados de suas faturas dos cartões de crédito (Nubank, Inter e Mercado Pago) de 2024 a 2026, além dos seus saldos em conta.\n\nVocê pode me fazer perguntas diretas sobre o orçamento. Por exemplo:\n- *"Quanto gastei com farmácia?"*\n- *"Qual foi o maior gasto de 2025 e em qual cartão?"*\n- *"Resuma as compras que fiz para a minha mãe."*\n\nComo posso ajudar você a otimizar suas finanças hoje?',
       timestamp: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
     },
   ]);

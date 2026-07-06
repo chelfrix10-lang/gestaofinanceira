@@ -306,7 +306,7 @@ export default function TransactionForm({ onAddTransaction, categories }: Transa
                 >
                   <option value="Nubank" className="bg-white dark:bg-zinc-900">Nubank (Roxo)</option>
                   <option value="Inter" className="bg-white dark:bg-zinc-900">Inter (Laranja)</option>
-                  <option value="Neon" className="bg-white dark:bg-zinc-900">Neon (Azul)</option>
+                  <option value="Mercado Pago" className="bg-white dark:bg-zinc-900">Mercado Pago (Preto)</option>
                 </select>
               </div>
             </div>
